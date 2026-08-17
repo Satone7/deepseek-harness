@@ -148,6 +148,21 @@ function recorderInto(seen: { method: string; payload: unknown }[]) {
 }
 
 describe('unary round trip', () => {
+  it('completes the full wire form on an insecure origin, where crypto has no randomUUID', async () => {
+    // A browser page loaded from a plain-HTTP LAN origin (the URL line the Web
+    // GUI itself prints) sees getRandomValues but not randomUUID — the latter
+    // is secure-context gated. RpcId minting must not depend on it.
+    const api = scriptedApi()
+    vi.stubGlobal('crypto', { getRandomValues: globalThis.crypto.getRandomValues.bind(globalThis.crypto) })
+    try {
+      const response = await client(api).sessions.list({})
+      expect(Object.hasOwn(globalThis.crypto, 'randomUUID')).toBe(false)
+      expect(response.result).toEqual({ ok: true, value: { items: [] } })
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
   it('carries payload out and value back through the full wire form', async () => {
     let seen: RpcRequest<{ cursor?: string }> | undefined
     const api = scriptedApi({

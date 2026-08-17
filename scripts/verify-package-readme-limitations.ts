@@ -17,6 +17,7 @@ const CANONICAL = '## Known Limitations and Deferred Work'
 /** Packages audited as having no limitations section, keyed by repo-relative directory. */
 const NO_LIMITATIONS: Readonly<Record<string, string>> = {
   'packages/util/brand': 'Type-only nominal-branding primitive with no runtime behavior or deferred work.',
+  'packages/util/random-uuid': 'Dependency-free id generator with no configuration, no runtime state, and no deferred work.',
 }
 
 /** A heading that reads as a limitations section — canonical or drifted. */

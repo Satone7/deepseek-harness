@@ -1488,6 +1488,9 @@ importers:
       '@deepseek-ai/dsh-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
+      '@deepseek-ai/dsh-random-uuid':
+        specifier: workspace:^
+        version: link:../../util/random-uuid
       '@types/ws':
         specifier: ^8.18.1
         version: 8.18.1
@@ -1855,6 +1858,9 @@ importers:
       '@deepseek-ai/dsh-plan-mode':
         specifier: workspace:^
         version: link:../../plan/plan-mode
+      '@deepseek-ai/dsh-random-uuid':
+        specifier: workspace:^
+        version: link:../../util/random-uuid
       '@deepseek-ai/dsh-session-projection':
         specifier: workspace:^
         version: link:../../session/session-projection
@@ -3083,6 +3089,9 @@ importers:
       '@deepseek-ai/dsh-client-web-react':
         specifier: workspace:^
         version: link:../web-react
+      '@deepseek-ai/dsh-random-uuid':
+        specifier: workspace:^
+        version: link:../../util/random-uuid
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -5189,6 +5198,9 @@ importers:
 
   packages/llm/llm:
     dependencies:
+      '@deepseek-ai/dsh-random-uuid':
+        specifier: workspace:^
+        version: link:../../util/random-uuid
       '@deepseek-ai/schemastery':
         specifier: link:../../../vendor/schemastery
         version: link:../../../vendor/schemastery
@@ -7939,6 +7951,15 @@ importers:
         version: link:../../runtime-diagnostics/invariants
 
   packages/util/output-retention:
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+
+  packages/util/random-uuid:
     devDependencies:
       '@deepseek-ai/cordis':
         specifier: workspace:^
@@ -12953,8 +12974,8 @@ packages:
   mdn-data@2.27.1:
     resolution: {integrity: sha512-9Yubnt3e8A0OKwxYSXyhLymGW4sCufcLG6VdiDdUGVkPhpqLxlvP5vl1983gQjJl3tqbrM731mjaZaP68AgosQ==}
 
-  media-typer@1.1.0:
-    resolution: {integrity: sha512-aisnrDP4GNe06UcKFnV5bfMNPBUw4jsLGaWwWfnH3v02GnBuXX2MCVn5RbrWo0j3pczUilYblq7fQ7Nw2t5XKw==}
+  media-typer@1.1.1:
+    resolution: {integrity: sha512-yz3xRaG20c6/BOzvYoDaGtPmGscs7YivItZEEqe6GbwNfHuxu9YNmvnEkMzKldAGY4/80pRcQRZSEnhquk9XuQ==}
     engines: {node: '>= 0.8'}
 
   merge-descriptors@2.0.0:
@@ -18266,7 +18287,7 @@ snapshots:
 
   mdn-data@2.27.1: {}
 
-  media-typer@1.1.0: {}
+  media-typer@1.1.1: {}
 
   merge-descriptors@2.0.0: {}
 
@@ -19371,7 +19392,7 @@ snapshots:
   type-is@2.1.0:
     dependencies:
       content-type: 2.0.0
-      media-typer: 1.1.0
+      media-typer: 1.1.1
       mime-types: 3.0.2
 
   typebox@1.1.38: {}

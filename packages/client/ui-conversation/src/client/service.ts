@@ -14,6 +14,8 @@ import type { Context } from '@deepseek-ai/cordis'
 // method) instead of the standalone helper.
 import type { ISessions, SessionFace, SessionId } from '@deepseek-ai/dsh-client-runtime/client'
 import type { ImageAttachmentRef, ImageMediaType } from '@deepseek-ai/dsh-attachment'
+// Inline-safe pure util (no runtime identity to share), not a plugin value import.
+import { randomUuid } from '@deepseek-ai/dsh-random-uuid'
 import type { ComposerAttachment } from './contract/slots.ts'
 import type { QueueAction, QueueItemId } from './contract/queue.ts'
 import type { ComposerBlocks } from './input/blocks.ts'
@@ -62,7 +64,7 @@ export interface IConversation {
 function browserDraftAttachment(file: File): ComposerAttachment {
   return {
     kind: 'image',
-    id: crypto.randomUUID() as DraftAttachmentId,
+    id: randomUuid() as DraftAttachmentId,
     previewUrl: URL.createObjectURL(file),
     file,
   }
