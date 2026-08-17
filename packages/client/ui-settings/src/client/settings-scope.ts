@@ -49,7 +49,7 @@ export class SettingsScopeController<T> implements SettingsScope<T> {
   /**
    * @param api - settings wire face.
    * @param spec - namespace identity and optional narrowing decoder.
-   * @param persistence - remote browsers remain process-local because settings RPCs are loopback-only.
+   * @param persistence - remote browsers remain process-local unless the deployment has widened settings RPCs to a trusted LAN.
    */
   constructor(
     private readonly api: SettingsFace,

@@ -44,8 +44,13 @@ function stageDist(): string {
 }
 
 /** A fake webServer capturing the fallback seat and index taps. */
-function fakeHttpServer(host: '127.0.0.1' | '0.0.0.0' = '127.0.0.1'): { server: WebServer; seat: () => unknown } {
+function fakeHttpServer(host: '127.0.0.1' | '0.0.0.0' = '127.0.0.1'): {
+  server: WebServer
+  seat: () => unknown
+  taps: Array<(html: string) => string>
+} {
   let fallback: unknown
+  const taps: Array<(html: string) => string> = []
   const server = {
     host,
     port: 4567,
@@ -53,9 +58,16 @@ function fakeHttpServer(host: '127.0.0.1' | '0.0.0.0' = '127.0.0.1'): { server: 
       fallback = handler
       return () => { fallback = undefined }
     },
-    applyIndexTaps: (html: string) => html,
+    tapIndex: (transform: (html: string) => string) => {
+      taps.push(transform)
+      return () => {
+        const at = taps.indexOf(transform)
+        if (at !== -1) taps.splice(at, 1)
+      }
+    },
+    applyIndexTaps: (html: string) => taps.reduce((current, tap) => tap(current), html),
   } as unknown as WebServer
-  return { server, seat: () => fallback }
+  return { server, seat: () => fallback, taps }
 }
 
 /** A fake Loader whose settlement the test controls (the URL line waits on it). */
@@ -73,7 +85,7 @@ describe('web-app runtime glue', () => {
   it('mounts dist serving, prompt section, bash variables, and prints the URL with the LAN snapshot', async () => {
     stageDist()
     const ctx = new Context()
-    const { server, seat } = fakeHttpServer('0.0.0.0')
+    const { server, seat, taps } = fakeHttpServer('0.0.0.0')
     ctx.provide('webServer', server)
     const contributions: BashContribution[] = []
     ctx.provide('shellEnv', {
@@ -88,6 +100,12 @@ describe('web-app runtime glue', () => {
     await ctx.plugin(SystemPrompt, { persona: '' })
     // Settle the injected registrations.
     await new Promise(resolve => setTimeout(resolve, 0))
+
+    expect(taps.length).toBeGreaterThan(0)
+    const indexHtml = server.applyIndexTaps('<head></head><body>shell</body>')
+    expect(indexHtml).toContain('window.__DSH_WEB_TRUST__')
+    expect(indexHtml).toContain('"trustedHosts":["192.168.1.5","lab.internal"]')
+    expect(indexHtml).toContain('"trustedNetworks":[]')
 
     expect(seat()).toBeDefined() // frontend-static claimed the fallback
     expect(ctx.get('webRuntime')).toEqual({
@@ -105,6 +123,18 @@ describe('web-app runtime glue', () => {
     expect(section?.text).toContain('pnpm run dev:web')
     const webRuntime = contributions.find(contribution => contribution.name === 'web-runtime')
     expect(webRuntime?.resolve()).toEqual({ DSH_WEB_URL: 'http://127.0.0.1:4567' })
+    await ctx.fiber.dispose()
+  })
+
+  it('injects declared trusted networks into the browser trust global', async () => {
+    stageDist()
+    const ctx = new Context()
+    const { server } = fakeHttpServer('0.0.0.0')
+    ctx.provide('webServer', server)
+    apply(ctx, new Config({ printUrl: false, surfaceContext: false, trustedHosts: [], trustedNetworks: ['192.168.1.0/24'] }))
+    await new Promise(resolve => setTimeout(resolve, 0))
+    const html = server.applyIndexTaps('<head></head><body>shell</body>')
+    expect(html).toContain('"trustedNetworks":["192.168.1.0/24"]')
     await ctx.fiber.dispose()
   })
 

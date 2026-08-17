@@ -23,6 +23,7 @@ export type {
 export { HostConnectionService } from './rpc-host.ts'
 
 export { API_PATH, HOST_EVENTS_PATH, MUX_EVENTS_PATH } from './api-path.ts'
+export { WEB_TRUST_GLOBAL, type WebTrust } from './web-trust.ts'
 
 /** Stable Cordis plugin name. */
 export const name = 'client-connection'

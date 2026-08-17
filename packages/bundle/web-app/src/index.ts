@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url'
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { addHarnessSourceSection } from '@deepseek-ai/dsh-app-boot'
+import { WEB_TRUST_GLOBAL } from '@deepseek-ai/dsh-client-connection'
 import * as FrontendStatic from '@deepseek-ai/dsh-host-frontend-static'
 import type {} from '@deepseek-ai/cordis-plugin-loader'
 import type {} from '@deepseek-ai/dsh-host-webserver'
@@ -103,6 +104,17 @@ export function resolveLanTrust(
   return { lanAddresses, trustedHosts: [...lanAddresses, ...extra], trustedNetworks: [...networks] }
 }
 
+/** Build the inline script that exposes the LAN trust fence to the browser client. */
+function injectWebTrust(html: string, runtime: WebRuntimeValues): string {
+  const script = `<script>window.${WEB_TRUST_GLOBAL} = ${JSON.stringify({
+    trustedHosts: runtime.trustedHosts,
+    trustedNetworks: runtime.trustedNetworks,
+  })}</script>`
+  const head = html.indexOf('<head>')
+  if (head !== -1) return `${html.slice(0, head + 6)}${script}${html.slice(head + 6)}`
+  return `${script}${html}`
+}
+
 /** Model-visible orientation and acceptance boundary for sessions created through `dsh web`. */
 function webSurfacePrompt(webUrl: string): string {
   const updateContract = 'The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while '
@@ -148,6 +160,12 @@ export function apply(ctx: Context, config: Config): void {
   const runtime = resolveLanTrust(ctx.webServer.host, config.trustedHosts, config.trustedNetworks)
   // Release dependent rows only after bind-dependent trust has been sampled once.
   ctx.provide(WEB_RUNTIME_SERVICE, runtime)
+  // The browser connection client does not receive host-row config through the
+  // module graph, so expose the trust fence explicitly for it to mirror.
+  ctx.effect(
+    () => ctx.webServer.tapIndex(html => injectWebTrust(html, runtime)),
+    'web-app: LAN trust bootstrap',
+  )
   ctx.plugin(FrontendStatic, { distIndex: internals.resolveDistIndex() })
   if (config.surfaceContext) {
     ctx.inject(['systemPrompt'], (promptCtx) => {
