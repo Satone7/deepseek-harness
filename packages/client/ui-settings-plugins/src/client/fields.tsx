@@ -88,6 +88,55 @@ export function ValueField(props: FieldProps & {
 }
 
 /**
+ * A multiline staged value field. Used for structured JSON configuration
+ * such as router pools, where a single-line input would be unreadable.
+ * @param props - the field's copy, its staged text, and the edit actions.
+ * @returns the labelled textarea.
+ */
+export function TextAreaField(props: FieldProps & {
+  /** Placeholder shown while the draft is empty. */
+  placeholder?: string
+  /** Minimum visible rows. */
+  rows?: number
+}) {
+  return (
+    <div className={css.field}>
+      <div className={css.head}>
+        <label className={css.label} htmlFor={props.id}>{props.label}</label>
+        {props.overridden
+          ? (
+            <span className={css.badges}>
+              <span className={css.badge}>{props.overriddenLabel}</span>
+              <button
+                type="button"
+                className={css.reset}
+                disabled={props.disabled}
+                onClick={props.onReset}
+              >
+                {props.resetLabel}
+              </button>
+            </span>
+          )
+          : null}
+      </div>
+      <textarea
+        id={props.id}
+        className={props.invalid ? css.textareaInvalid : css.textarea}
+        rows={props.rows ?? 8}
+        value={props.text}
+        placeholder={props.placeholder ?? ''}
+        disabled={props.disabled}
+        {...props.invalid ? { 'aria-invalid': true } : {}}
+        onChange={(event) => { props.onEdit(event.target.value) }}
+      />
+      <p className={props.invalid ? css.invalid : css.hint}>
+        {props.invalid ? props.invalidLabel : props.hint}
+      </p>
+    </div>
+  )
+}
+
+/**
  * A write-only credential control. The value never rides a response, so the
  * control reports only whether one is configured and starts blank; a blank
  * draft writes nothing, which keeps the stored key rather than clearing it.

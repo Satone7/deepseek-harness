@@ -5,8 +5,9 @@
 
 import { describe, expect, it, vi } from 'vitest'
 import { stubSettingsScope, type StubSettingsScope } from '@deepseek-ai/dsh-client-test-runtime'
-import { CardForm, numberField, textField } from '../src/client/card-form.ts'
+import { CardForm, jsonField, numberField, textField } from '../src/client/card-form.ts'
 import { AgentLoopCardController, type AgentLoopSettings } from '../src/client/agent-loop-card-controller.ts'
+import { LlmRouterCardController, type LlmRouterSettings } from '../src/client/llm-router-card-controller.ts'
 import { BashCardController, type BashSettings } from '../src/client/bash-card-controller.ts'
 import { WebSearchCardController, type WebSearchSettings } from '../src/client/web-search-card-controller.ts'
 
@@ -273,6 +274,53 @@ describe('CardForm', () => {
   })
 })
 
+describe('CardForm JSON field', () => {
+  it('formats structured values as pretty JSON and parses valid drafts', async () => {
+    const host = stubSettingsScope<Record<string, unknown>>()
+    acceptWrites(host)
+    const subject = new CardForm(host.scope, [jsonField('pools')])
+    host.publish({
+      status: 'ready',
+      writable: true,
+      value: { pools: [{ id: 'auto', candidates: [] }] },
+      base: { pools: [{ id: 'auto', candidates: [] }] },
+      user: {},
+    })
+
+    expect(subject.field('pools').text).toContain('"id": "auto"')
+    subject.actions().edit('pools', '{\n  "pools": []\n}')
+    await subject.save()
+
+    expect(host.set).toHaveBeenCalledWith('pools', { pools: [] })
+  })
+
+  it('marks an invalid JSON draft and refuses to save it', async () => {
+    const host = stubSettingsScope<Record<string, unknown>>()
+    const subject = new CardForm(host.scope, [jsonField('pools')])
+    host.publish({ status: 'ready', writable: true, value: {}, base: {}, user: {} })
+
+    subject.actions().edit('pools', '{bad')
+
+    expect(subject.field('pools')).toMatchObject({ text: '{bad', invalid: true })
+    expect(subject.shell().invalid).toBe(true)
+
+    await subject.save()
+    expect(host.set).not.toHaveBeenCalled()
+  })
+
+  it('clears a JSON field by emptying it', async () => {
+    const host = stubSettingsScope<Record<string, unknown>>()
+    acceptWrites(host)
+    const subject = new CardForm(host.scope, [jsonField('pools')])
+    host.publish({ status: 'ready', writable: true, value: { pools: [] }, base: {}, user: { pools: [] } })
+
+    subject.actions().edit('pools', '')
+    await subject.save()
+
+    expect(host.unset).toHaveBeenCalledWith('pools')
+  })
+})
+
 describe('BashCardController', () => {
   it('projects both fields and saves them in one write pass', async () => {
     const host = stubSettingsScope<BashSettings>()
@@ -376,6 +424,35 @@ describe('AgentLoopCardController', () => {
     host.publish({ status: 'ready', writable: false, value: { maxParallelToolCalls: 10 } })
 
     expect(controller.inject().hooks.agentLoopCard.getSnapshot().writable).toBe(false)
+  })
+})
+
+describe('LlmRouterCardController', () => {
+  it('projects the pools JSON field and writes it on save', async () => {
+    const host = stubSettingsScope<LlmRouterSettings>()
+    acceptWrites(host)
+    const controller = new LlmRouterCardController(host.scope)
+    host.publish({
+      status: 'ready',
+      writable: true,
+      value: { pools: [{ id: 'auto', candidates: [] }] },
+      base: { pools: [{ id: 'auto', candidates: [] }] },
+      user: {},
+    })
+    const face = controller.inject()
+
+    const snapshot = face.hooks.llmRouterCard.getSnapshot()
+    expect(snapshot.pools.text).toContain('"id": "auto"')
+    expect(snapshot).toMatchObject({
+      available: true,
+      writable: true,
+      dirty: false,
+      pools: { overridden: false },
+    })
+
+    face.edit('pools', '{\n  "pools": []\n}')
+    face.save()
+    await vi.waitFor(() => { expect(host.set).toHaveBeenCalledWith('pools', { pools: [] }) })
   })
 })
 

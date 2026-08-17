@@ -146,6 +146,29 @@ export function textField(field: string): CardFieldSpec {
 }
 
 /**
+ * A JSON document field. The empty draft clears the field; any other draft
+ * must parse as JSON or it blocks the save. Values are stored as parsed JSON,
+ * which is what the Host settings schema expects for structured sections.
+ * @param field - field name inside the namespace section.
+ * @returns the field's conversion spec.
+ */
+export function jsonField(field: string): CardFieldSpec {
+  return {
+    field,
+    format: value => value === undefined ? '' : JSON.stringify(value, null, 2),
+    parse: (text) => {
+      const trimmed = text.trim()
+      if (trimmed === '') return { kind: 'clear' }
+      try {
+        return { kind: 'set', value: JSON.parse(trimmed) }
+      } catch {
+        return undefined
+      }
+    },
+  }
+}
+
+/**
  * Stages one card's edits over one settings namespace and writes them on save.
  *
  * The form publishes through a snapshot store because slot components read

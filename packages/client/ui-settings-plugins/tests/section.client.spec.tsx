@@ -13,6 +13,8 @@ import { AgentLoopCard } from '../src/client/AgentLoopCard.tsx'
 import type { AgentLoopCardProps } from '../src/client/AgentLoopCard.tsx'
 import { BashCard } from '../src/client/BashCard.tsx'
 import type { BashCardProps } from '../src/client/BashCard.tsx'
+import { LlmRouterCard } from '../src/client/LlmRouterCard.tsx'
+import type { LlmRouterCardProps } from '../src/client/LlmRouterCard.tsx'
 import { ConfigurablePluginsTab } from '../src/client/ConfigurablePluginsTab.tsx'
 import type { ConfigurablePluginsTabProps } from '../src/client/ConfigurablePluginsTab.tsx'
 import { PluginsSettingsSection } from '../src/client/PluginsSettingsSection.tsx'
@@ -20,6 +22,7 @@ import type { PluginsSettingsSectionProps, PluginsSettingsTabEntry } from '../sr
 import { WebSearchCard } from '../src/client/WebSearchCard.tsx'
 import type { WebSearchCardProps } from '../src/client/WebSearchCard.tsx'
 import type { AgentLoopCardState } from '../src/client/agent-loop-card-controller.ts'
+import type { LlmRouterCardState } from '../src/client/llm-router-card-controller.ts'
 import type { BashCardState } from '../src/client/bash-card-controller.ts'
 import type { CardFieldState, CardShell } from '../src/client/card-form.ts'
 import type { WebSearchCardState } from '../src/client/web-search-card-controller.ts'
@@ -78,6 +81,18 @@ function renderBash(state: Partial<BashCardState> = {}) {
   const actions = cardActions()
   const props = { ...actions, t, useBashCard: bindSnapshotSelector(store) } as unknown as BashCardProps
   render(<BashCard {...props} />)
+  return actions
+}
+
+function renderLlmRouter(state: Partial<LlmRouterCardState> = {}) {
+  const store = createSnapshotStore<LlmRouterCardState>({
+    ...settled,
+    pools: field('{\n  "pools": []\n}'),
+    ...state,
+  })
+  const actions = cardActions()
+  const props = { ...actions, t, useLlmRouterCard: bindSnapshotSelector(store) } as unknown as LlmRouterCardProps
+  render(<LlmRouterCard {...props} />)
   return actions
 }
 
@@ -285,6 +300,56 @@ describe('BashCard', () => {
     fireEvent.click(screen.getByText(en.bashTitle))
 
     expect(screen.queryByLabelText(en.bashTimeoutMs)).toBeNull()
+  })
+})
+
+describe('LlmRouterCard', () => {
+  it('renders nothing while its namespace is unavailable', () => {
+    const { container } = render(<div />)
+    renderLlmRouter({ available: false })
+
+    expect(container.textContent).toBe('')
+    expect(screen.queryByText(en.llmRouterTitle)).toBeNull()
+  })
+
+  it('shows the plugin and reveals the JSON textarea only once expanded', () => {
+    renderLlmRouter()
+    expect(screen.getByText(en.llmRouterTitle)).toBeTruthy()
+    expect(screen.queryByLabelText(en.llmRouterPools)).toBeNull()
+
+    fireEvent.click(screen.getByText(en.llmRouterTitle))
+
+    expect(screen.getByLabelText(en.llmRouterPools)).toBeTruthy()
+  })
+
+  it('stages a JSON edit instead of writing it', () => {
+    const actions = renderLlmRouter()
+    fireEvent.click(screen.getByText(en.llmRouterTitle))
+
+    fireEvent.change(screen.getByLabelText(en.llmRouterPools), {
+      target: { value: '{\n  "pools": [1]\n}' },
+    })
+
+    expect(actions.edit).toHaveBeenCalledWith('pools', '{\n  "pools": [1]\n}')
+    expect(actions.save).not.toHaveBeenCalled()
+  })
+
+  it('offers the reset for an overridden pools field', () => {
+    const actions = renderLlmRouter({ pools: field('{}', { overridden: true }) })
+    fireEvent.click(screen.getByText(en.llmRouterTitle))
+
+    expect(screen.getByText(en.overridden)).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: en.reset }))
+
+    expect(actions.resetField).toHaveBeenCalledWith('pools')
+  })
+
+  it('blocks the save while the JSON draft is invalid', () => {
+    renderLlmRouter({ dirty: true, invalid: true, pools: field('{bad', { invalid: true }) })
+    fireEvent.click(screen.getByText(en.llmRouterTitle))
+
+    expect(screen.getByRole('button', { name: en.save })).toHaveProperty('disabled', true)
+    expect(screen.getByText(en.llmRouterPoolsInvalid)).toBeTruthy()
   })
 })
 

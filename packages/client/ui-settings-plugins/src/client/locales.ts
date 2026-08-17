@@ -11,6 +11,7 @@ export type PluginsSettingsLocaleKey =
   | 'webSearchTitle' | 'webSearchDescription'
   | 'webSearchApiKey' | 'webSearchApiKeyHint' | 'webSearchApiKeySet' | 'webSearchApiKeyUnset'
   | 'webSearchBaseUrl' | 'webSearchBaseUrlHint' | 'webSearchMaxUses' | 'webSearchMaxUsesHint'
+  | 'llmRouterTitle' | 'llmRouterDescription' | 'llmRouterPools' | 'llmRouterPoolsHint' | 'llmRouterPoolsInvalid'
 
 /** English copy. */
 export const en: Record<PluginsSettingsLocaleKey, string> = {
@@ -51,6 +52,11 @@ export const en: Record<PluginsSettingsLocaleKey, string> = {
   webSearchBaseUrlHint: 'Leave blank to use the provider default.',
   webSearchMaxUses: 'Max searches per request',
   webSearchMaxUsesHint: 'How many times one request may search before it must answer.',
+  llmRouterTitle: 'LLM router',
+  llmRouterDescription: 'Virtual-provider routing pools and failover.',
+  llmRouterPools: 'Routing pools (JSON)',
+  llmRouterPoolsHint: 'Edit the full pools array as JSON. Changes take effect after restart.',
+  llmRouterPoolsInvalid: 'Enter valid JSON, or leave blank to use the default.',
 }
 
 /** Simplified Chinese copy. */
@@ -92,4 +98,9 @@ export const zh: Record<PluginsSettingsLocaleKey, string> = {
   webSearchBaseUrlHint: '留空则使用提供方默认地址。',
   webSearchMaxUses: '单次请求最多搜索次数',
   webSearchMaxUsesHint: '一次请求在必须作答前最多可以搜索多少次。',
+  llmRouterTitle: 'LLM 路由器',
+  llmRouterDescription: '虚拟提供方路由池与故障转移。',
+  llmRouterPools: '路由池（JSON）',
+  llmRouterPoolsHint: '以 JSON 编辑完整的 pools 数组。修改将在重启后生效。',
+  llmRouterPoolsInvalid: '请输入合法 JSON；留空表示使用默认值。',
 }

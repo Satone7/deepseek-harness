@@ -6,7 +6,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { SecretField, ValueField } from '../src/client/fields.tsx'
+import { SecretField, TextAreaField, ValueField } from '../src/client/fields.tsx'
 
 afterEach(cleanup)
 
@@ -83,6 +83,66 @@ describe('ValueField', () => {
 
     expect(screen.getByLabelText('Command timeout')).toHaveProperty('disabled', true)
     expect(screen.getByRole('button', { name: 'Reset to default' })).toHaveProperty('disabled', true)
+  })
+})
+
+describe('TextAreaField', () => {
+  it('stages multiline edits and renders the staged text', () => {
+    const onEdit = vi.fn()
+    render(
+      <TextAreaField
+        {...frame}
+        text={'{\n  "pools": []\n}'}
+        onEdit={onEdit}
+        onReset={vi.fn()}
+      />,
+    )
+    const textarea = screen.getByLabelText('Command timeout')
+    expect(textarea).toHaveProperty('value', '{\n  "pools": []\n}')
+
+    fireEvent.change(textarea, { target: { value: '{\n  "pools": [1]\n}' } })
+    expect(onEdit).toHaveBeenCalledWith('{\n  "pools": [1]\n}')
+  })
+
+  it('shows the override badge, reset action, and invalid hint', () => {
+    const onReset = vi.fn()
+    const { rerender } = render(
+      <TextAreaField
+        {...frame}
+        text="{}"
+        overridden
+        onEdit={vi.fn()}
+        onReset={onReset}
+      />,
+    )
+    expect(screen.getByText('Overridden')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Reset to default' }))
+    expect(onReset).toHaveBeenCalledOnce()
+
+    rerender(
+      <TextAreaField
+        {...frame}
+        text="{bad json"
+        invalid
+        onEdit={vi.fn()}
+        onReset={vi.fn()}
+      />,
+    )
+    expect(screen.getByText('Enter a number.')).toBeTruthy()
+    expect(screen.getByLabelText('Command timeout').getAttribute('aria-invalid')).toBe('true')
+  })
+
+  it('disables the textarea while the document is read-only', () => {
+    render(
+      <TextAreaField
+        {...frame}
+        disabled
+        text="{}"
+        onEdit={vi.fn()}
+        onReset={vi.fn()}
+      />,
+    )
+    expect(screen.getByLabelText('Command timeout')).toHaveProperty('disabled', true)
   })
 })
 

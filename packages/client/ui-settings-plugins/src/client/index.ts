@@ -4,7 +4,7 @@
  *
  * The section declares `settings.plugins.tab`; its own `configurable` tab then
  * declares `settings.plugin.item` and renders whatever cards were registered
- * into it. The three cards this package ships are the host-plane sections the
+ * into it. The cards this package ships are the host-plane sections the
  * deployment already exposes; each binds its namespace through the client
  * settings scope, which keeps them unaware of one another and of other tabs.
  */
@@ -21,6 +21,7 @@ import { resolveSlotLabel } from '@deepseek-ai/dsh-client-ui-slots'
 // Type-only: the ctx.remote Context merge and the forwarded-event key face.
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import { AgentLoopCard } from './AgentLoopCard.tsx'
+import { LlmRouterCard } from './LlmRouterCard.tsx'
 import { BashCard } from './BashCard.tsx'
 import { ConfigurablePluginsTab } from './ConfigurablePluginsTab.tsx'
 import type { ConfigurablePluginsTabInjected } from './ConfigurablePluginsTab.tsx'
@@ -28,6 +29,7 @@ import { PluginsSettingsSection } from './PluginsSettingsSection.tsx'
 import type { PluginsSettingsSectionInjected, PluginsSettingsTabEntry } from './PluginsSettingsSection.tsx'
 import { WebSearchCard } from './WebSearchCard.tsx'
 import { AGENT_LOOP_NS, AgentLoopCardController } from './agent-loop-card-controller.ts'
+import { LLM_ROUTER_NS, LlmRouterCardController } from './llm-router-card-controller.ts'
 import { SHELL_NS, BashCardController } from './bash-card-controller.ts'
 import { WEB_SEARCH_NS, WebSearchCardController } from './web-search-card-controller.ts'
 import { en, zh } from './locales.ts'
@@ -41,6 +43,7 @@ export type {
   CardActions, CardFieldSpec, CardFieldState, CardSecretSpec, CardShell,
 } from './card-form.ts'
 export type { AgentLoopCardFace, AgentLoopCardState } from './agent-loop-card-controller.ts'
+export type { LlmRouterCardFace, LlmRouterCardState } from './llm-router-card-controller.ts'
 export type { BashCardFace, BashCardState } from './bash-card-controller.ts'
 export type { WebSearchCardFace, WebSearchCardState } from './web-search-card-controller.ts'
 
@@ -62,6 +65,7 @@ export function apply(ctx: ClientContext): void {
   const bash = new BashCardController(ctx.settingsScope.bind({ namespace: SHELL_NS }))
   const agentLoop = new AgentLoopCardController(ctx.settingsScope.bind({ namespace: AGENT_LOOP_NS }))
   const webSearch = new WebSearchCardController(ctx.settingsScope.bind({ namespace: WEB_SEARCH_NS }), api)
+  const llmRouter = new LlmRouterCardController(ctx.settingsScope.bind({ namespace: LLM_ROUTER_NS }))
 
   // The credential a card reports is not part of any settings section, so its
   // scope publishes nothing when one is written. This is the only signal that
@@ -119,7 +123,7 @@ export function apply(ctx: ClientContext): void {
   }, PluginsSettingsSection))
 
   // The existing configuration page is one ordinary tab. It keeps ownership
-  // of the card slot and the three shipped card contributions below.
+  // of the card slot and the shipped card contributions below.
   ctx.slots.inject('settings.plugins.tab', () => ctx.slots.register({
     name: 'settings.plugins.tab',
     id: 'configurable',
@@ -154,5 +158,12 @@ export function apply(ctx: ClientContext): void {
       locale: NS,
       inject: () => webSearch.inject(),
     }, WebSearchCard)
+    yield ctx.slots.register({
+      name: 'settings.plugin.item',
+      id: 'llm-router',
+      order: 30,
+      locale: NS,
+      inject: () => llmRouter.inject(),
+    }, LlmRouterCard)
   })
 }
