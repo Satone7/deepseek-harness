@@ -47,12 +47,15 @@ export interface Config {
   surfaceContext: boolean
   /** Explicit `--trusted-host` authorities from this invocation. */
   trustedHosts: string[]
+  /** Explicit `--trusted-network` IPv4 CIDRs from this invocation, passed to the fence verbatim. */
+  trustedNetworks: string[]
 }
 
 export const Config: z<Config> = z.object({
   printUrl: z.boolean().default(true),
   surfaceContext: z.boolean().default(true),
   trustedHosts: z.array(String).default([]),
+  trustedNetworks: z.array(String).default([]),
 })
 
 /** Bind-dependent Web values shared by the trust fence and URL display. */
@@ -61,6 +64,8 @@ export interface WebRuntimeValues {
   lanAddresses: string[]
   /** LAN literals followed by explicit invocation authorities. */
   trustedHosts: string[]
+  /** Declared trusted-network CIDRs, verbatim; no network is ever derived. */
+  trustedNetworks: string[]
 }
 
 /** Environment variable naming the canonical local URL of this Web GUI. */
@@ -78,17 +83,24 @@ const ALL_INTERFACES_HOST = '0.0.0.0'
  * Derived entries are port-less IP literals: DNS rebinding needs an
  * attacker-controlled name, while an IP-literal Host is safe on any port and
  * an OS-assigned port is unknowable before bind.
+ * Trusted networks ride through verbatim — deriving a machine interface's
+ * containing subnet would guess the operator's network plan.
  * @param bindHost - the active webserver bind host.
  * @param extra - explicit `--trusted-host` values, in argument order.
+ * @param networks - explicit `--trusted-network` CIDRs, in argument order.
  * @returns the LAN display addresses and invocation-derived fence authorities.
  */
-export function resolveLanTrust(bindHost: string, extra: readonly string[]): WebRuntimeValues {
+export function resolveLanTrust(
+  bindHost: string,
+  extra: readonly string[],
+  networks: readonly string[],
+): WebRuntimeValues {
   const lanAddresses = bindHost === ALL_INTERFACES_HOST
     ? Object.values(networkInterfaces()).flat()
       .filter((iface): iface is NonNullable<typeof iface> => iface !== undefined && iface.family === 'IPv4' && !iface.internal)
       .map(iface => iface.address)
     : []
-  return { lanAddresses, trustedHosts: [...lanAddresses, ...extra] }
+  return { lanAddresses, trustedHosts: [...lanAddresses, ...extra], trustedNetworks: [...networks] }
 }
 
 /** Model-visible orientation and acceptance boundary for sessions created through `dsh web`. */
@@ -133,7 +145,7 @@ export const internals: { resolveDistIndex: () => string } = { resolveDistIndex 
  * @param config - validated {@link Config}.
  */
 export function apply(ctx: Context, config: Config): void {
-  const runtime = resolveLanTrust(ctx.webServer.host, config.trustedHosts)
+  const runtime = resolveLanTrust(ctx.webServer.host, config.trustedHosts, config.trustedNetworks)
   // Release dependent rows only after bind-dependent trust has been sampled once.
   ctx.provide(WEB_RUNTIME_SERVICE, runtime)
   ctx.plugin(FrontendStatic, { distIndex: internals.resolveDistIndex() })

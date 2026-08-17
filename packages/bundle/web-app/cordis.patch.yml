@@ -134,6 +134,7 @@
         printUrl: true
         surfaceContext: true
         trustedHosts: !!js ctx.webStartup.trustedHosts
+        trustedNetworks: !!js ctx.webStartup.trustedNetworks
 
     # The client-plugin reload chain, always mounted: it is idle until a
     # rebuild watcher (pnpm run dev:web) actually rewrites client bundles. It
@@ -161,6 +162,9 @@
         # A deployment adding authorities keeps this expression and concatenates
         # its literals, for example: ['app.internal', ...ctx.webRuntime.trustedHosts].
         trustedHosts: !!js ctx.webRuntime.trustedHosts
+        # Declared --trusted-network CIDRs: their socket sources pass the /api
+        # fence like loopback, privileged methods included.
+        trustedNetworks: !!js ctx.webRuntime.trustedNetworks
 
     - id: api-remotes
       name: '@deepseek-ai/dsh-api-remotes'

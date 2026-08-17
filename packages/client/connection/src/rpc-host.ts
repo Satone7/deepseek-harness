@@ -11,8 +11,9 @@ import {
   type RpcId as RpcIdType,
   type ServerResponse as RpcServerResponse,
 } from '@deepseek-ai/dsh-host-apiproxy/api'
-import { bridge, type FetchHandler } from './http-bridge.ts'
+import { bridge, type FetchHandler, type FetchSource } from './http-bridge.ts'
 import { isTrustedApiRequest } from './api-request-trust.ts'
+import { acceptsTrustedSource, type TrustedNetwork } from './trusted-network.ts'
 import { API_PATH } from './api-path.ts'
 import type {
   ConnectionRpcEndpointMatcher,
@@ -47,8 +48,13 @@ export class HostConnectionService extends Service implements HostConnectionHand
    * Provide the Host half over the active HTTP server.
    * @param ctx - owning Connection plugin context.
    * @param trustedHosts - deployment authorities accepted by trusted-host channels.
+   * @param trustedNetworks - parsed deployment networks whose socket sources the fence accepts.
    */
-  constructor(ctx: Context, private readonly trustedHosts: readonly string[]) {
+  constructor(
+    ctx: Context,
+    private readonly trustedHosts: readonly string[],
+    private readonly trustedNetworks: readonly TrustedNetwork[],
+  ) {
     super(ctx, 'connection')
   }
 
@@ -73,16 +79,16 @@ export class HostConnectionService extends Service implements HostConnectionHand
     fallback: FetchHandler,
   ): FetchHandler {
     return {
-      fetch: (request) => {
+      fetch: (request, source: FetchSource) => {
         const endpoint = endpointFromPath(channel, new URL(request.url).pathname)
         const interceptor = this.interceptors.get(channel)
         if (endpoint === undefined || interceptor === undefined || !interceptor.matches(endpoint)) {
-          return fallback.fetch(request)
+          return fallback.fetch(request, source)
         }
         if (interceptor.options.authority === 'loopback' && !isTrustedApiRequest(request, [])) {
           return Promise.resolve(new Response('forbidden', { status: 403 }))
         }
-        return interceptor.fetchHandler.fetch(request)
+        return interceptor.fetchHandler.fetch(request, source)
       },
     }
   }
@@ -100,7 +106,8 @@ export class HostConnectionService extends Service implements HostConnectionHand
       kind: 'prefix',
       path: channel,
       handler: async (req, res) => {
-        if (!isTrustedApiRequest(req, trustedHosts)) {
+        if (!acceptsTrustedSource(req.socket.remoteAddress, this.trustedNetworks)
+          || !isTrustedApiRequest(req, trustedHosts)) {
           res.writeHead(403)
           res.end('forbidden')
           return

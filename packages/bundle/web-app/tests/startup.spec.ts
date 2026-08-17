@@ -58,6 +58,7 @@ export const apply = ctx => globalThis.__webStartupApply(ctx)
     "    host: !!js ctx.webStartup.host ?? '127.0.0.1'",
     '    port: !!js ctx.webStartup.port ?? 3080',
     '    trustedHosts: !!js ctx.webStartup.trustedHosts',
+    '    trustedNetworks: !!js ctx.webStartup.trustedNetworks',
     '- id: provider',
     `  name: ${pathToFileURL(join(dir, 'provider.mjs')).href}`,
     '',
@@ -92,11 +93,14 @@ describe('web command-line provider', () => {
       '--port', '8080',
       '--trusted-host', 'lab.internal', 'lab-2.internal',
       '--trusted-host', '10.0.0.9',
+      '--trusted-network', '192.168.100.0/24', '10.147.20.0/24',
+      '--trusted-network', '172.16.0.0/12',
     ])
     expect(values).toEqual({
       host: '127.0.0.1',
       port: 8080,
       trustedHosts: ['lab.internal', 'lab-2.internal', '10.0.0.9'],
+      trustedNetworks: ['192.168.100.0/24', '10.147.20.0/24', '172.16.0.0/12'],
     })
     expect(observed.readerConfig).toEqual(values)
     expect(observed.exits).toEqual([])
@@ -104,11 +108,12 @@ describe('web command-line provider', () => {
 
   it('leaves deployment values to each consumer when flags omit them', async () => {
     const { values, observed } = await bootProvider([])
-    expect(values).toEqual({ trustedHosts: [] })
+    expect(values).toEqual({ trustedHosts: [], trustedNetworks: [] })
     expect(observed.readerConfig).toEqual({
       host: '127.0.0.1',
       port: 3080,
       trustedHosts: [],
+      trustedNetworks: [],
     })
   })
 
@@ -116,6 +121,7 @@ describe('web command-line provider', () => {
     const { values, observed } = await bootProvider(['--help'])
     expect(observed.out).toContain('dsh --profile web')
     expect(observed.out).toContain('--trusted-host')
+    expect(observed.out).toContain('--trusted-network')
     expect(values).toBeUndefined()
     expect(observed.readerConfig).toBeUndefined()
     expect(observed.exits).toEqual([0])
@@ -129,11 +135,25 @@ describe('web command-line provider', () => {
     expect(observed.exits).toEqual([1])
   })
 
-  it('rejects the intentionally unsupported all-interfaces host before the consumer activates', async () => {
+  it('rejects the all-interfaces host unless a trusted network is declared', async () => {
     const { values, observed } = await bootProvider(['--host', '0.0.0.0'])
-    expect(observed.out).toContain('--host 0.0.0.0 is intentionally not supported yet for safety: it would expose remote code execution to the network; use 127.0.0.1 instead')
+    expect(observed.out).toContain('--host 0.0.0.0 requires --trusted-network')
+    expect(observed.out).toContain('remote code execution')
     expect(values).toBeUndefined()
     expect(observed.readerConfig).toBeUndefined()
     expect(observed.exits).toEqual([1])
+  })
+
+  it('accepts the all-interfaces host once a trusted network is declared', async () => {
+    const { values, observed } = await bootProvider([
+      '--host', '0.0.0.0',
+      '--trusted-network', '192.168.100.0/24',
+    ])
+    expect(values).toEqual({
+      host: '0.0.0.0',
+      trustedHosts: [],
+      trustedNetworks: ['192.168.100.0/24'],
+    })
+    expect(observed.exits).toEqual([])
   })
 })

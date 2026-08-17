@@ -8,6 +8,7 @@ import { toFetchHandler } from '@deepseek-ai/dsh-host-apiproxy'
 import { API_PATH, HOST_EVENTS_PATH, MUX_EVENTS_PATH } from './api-path.ts'
 import { bridge, DEFAULT_MAX_REQUEST_BODY_BYTES } from './http-bridge.ts'
 import { assertTrustedAuthority, isTrustedApiRequest } from './api-request-trust.ts'
+import { acceptsTrustedSource, isTrustedSource, parseTrustedNetwork } from './trusted-network.ts'
 import { HostConnectionService } from './rpc-host.ts'
 import { rejectWebSocketUpgrade, WebSocketDownlinks } from './websocket-downlink.ts'
 
@@ -57,12 +58,22 @@ export interface ConnectionConfig {
    * that is not a bare, canonical authority fails the plugin load.
    */
   trustedHosts?: string[]
+  /**
+   * IPv4 CIDR networks whose socket sources this deployment trusts like
+   * loopback (`192.168.100.0/24`). A non-empty list also narrows the whole
+   * `/api` surface and both event upgrades to loopback and member sources —
+   * an all-interfaces bind then refuses every other network that can route
+   * here — and widens the privileged-method pin below to those sources. An
+   * entry that is not a canonical CIDR (host bits zero) fails the plugin load.
+   */
+  trustedNetworks?: string[]
   /** Maximum buffered JSON body for every `/api` request. */
   maxRequestBodyBytes?: number
 }
 
 export const Config: z<ConnectionConfig> = z.object({
   trustedHosts: z.array(String).default([]),
+  trustedNetworks: z.array(String).default([]),
   maxRequestBodyBytes: z.natural().min(1).default(DEFAULT_MAX_REQUEST_BODY_BYTES),
 })
 
@@ -85,6 +96,12 @@ export const Config: z<ConnectionConfig> = z.object({
  * The model catalog (`llm.providers`, `llm.models`) is deliberately NOT here:
  * it carries provider ids, display names, and model lists — no endpoints,
  * keys, or key state — and a LAN client's model picker legitimately needs it.
+ *
+ * Declared `trustedNetworks` are the one widening: a socket source inside a
+ * vouched-for network (loopback included) reaches these methods like a local
+ * caller. That is the deployment trusting its own LAN at the connection
+ * layer — still not per-user authentication; anyone on those wires is
+ * accepted.
  */
 const PRIVILEGED_METHODS = new Set([
   // A preset composition names the plugins a session runs, so reading one is
@@ -124,6 +141,9 @@ const PRIVILEGED_METHODS = new Set([
  * cross-site defense — [api-request-trust](./api-request-trust.ts));
  * privileged methods additionally pass it with an empty trust list, which
  * pins them to loopback.
+ * Declared `trustedNetworks` additionally gate the socket source (loopback or
+ * member only) on every `/api` request and both event upgrades, and member
+ * sources pass the privileged-method pin.
  * @param ctx - Host plugin context.
  * @param config - resolved plugin config (schema defaults applied).
  */
@@ -134,17 +154,24 @@ export function apply(ctx: Context, config?: ConnectionConfig): void {
   // Config boundary: a malformed entry fails the load loudly here rather than
   // silently authorizing its hostname prefix at request time.
   for (const entry of trustedHosts) assertTrustedAuthority(entry)
+  // Same boundary for networks: a rewritten range is never authorized quietly.
+  const trustedNetworks = (config?.trustedNetworks ?? []).map(parseTrustedNetwork)
   if (ctx.get('apiProxy') !== undefined) assertImageBodyCapacity(ctx, maxRequestBodyBytes)
-  const connection = new HostConnectionService(ctx, trustedHosts)
+  const connection = new HostConnectionService(ctx, trustedHosts, trustedNetworks)
   const fetchHandler = connection.createSharedFetchHandler(API_PATH, {
-    async fetch(request) {
+    async fetch(request, source) {
       const pathname = new URL(request.url).pathname
       const method = pathname.startsWith(`${API_PATH}/`)
         ? pathname.slice(API_PATH.length + 1)
         : undefined
+      // The widening is strictly opt-in: with no networks declared the pin is
+      // exactly the loopback-Host check, so the always-trusted loopback arm of
+      // isTrustedSource alone cannot reach privileged methods through a
+      // non-loopback Host.
       if (method !== undefined
         && PRIVILEGED_METHODS.has(method)
-        && !isTrustedApiRequest(request, [])) {
+        && !isTrustedApiRequest(request, [])
+        && !(trustedNetworks.length > 0 && isTrustedSource(source.remoteAddress, trustedNetworks))) {
         return new Response('forbidden', { status: 403 })
       }
       if (request.method === 'GET' && (pathname === MUX_EVENTS_PATH || pathname === HOST_EVENTS_PATH)) {
@@ -162,7 +189,8 @@ export function apply(ctx: Context, config?: ConnectionConfig): void {
     kind: 'prefix',
     path: API_PATH,
     handler: async (req, res) => {
-      if (!isTrustedApiRequest(req, trustedHosts)) {
+      if (!acceptsTrustedSource(req.socket.remoteAddress, trustedNetworks)
+        || !isTrustedApiRequest(req, trustedHosts)) {
         res.writeHead(403)
         res.end('forbidden')
         return
@@ -181,7 +209,8 @@ export function apply(ctx: Context, config?: ConnectionConfig): void {
       apiCtx.effect(() => apiCtx.webServer.registerUpgrade({
         path,
         handler: (req, socket, head) => {
-          if (!isTrustedApiRequest(req, trustedHosts)) {
+          if (!acceptsTrustedSource(req.socket.remoteAddress, trustedNetworks)
+            || !isTrustedApiRequest(req, trustedHosts)) {
             rejectWebSocketUpgrade(socket)
             return
           }

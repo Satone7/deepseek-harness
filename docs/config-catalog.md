@@ -405,12 +405,21 @@ export interface ConnectionConfig {
    * that is not a bare, canonical authority fails the plugin load.
    */
   trustedHosts?: string[]
+  /**
+   * IPv4 CIDR networks whose socket sources this deployment trusts like
+   * loopback (`192.168.100.0/24`). A non-empty list also narrows the whole
+   * `/api` surface and both event upgrades to loopback and member sources —
+   * an all-interfaces bind then refuses every other network that can route
+   * here — and widens the privileged-method pin below to those sources. An
+   * entry that is not a canonical CIDR (host bits zero) fails the plugin load.
+   */
+  trustedNetworks?: string[]
   /** Maximum buffered JSON body for every `/api` request. */
   maxRequestBodyBytes?: number
 }
 ```
 
-Source: [`packages/client/connection/src/index.ts:50`](../packages/client/connection/src/index.ts)
+Source: [`packages/client/connection/src/index.ts:51`](../packages/client/connection/src/index.ts)
 
 <a id="deepseek-aidsh-client-hmr"></a>
 
@@ -2884,6 +2893,8 @@ export interface Config {
   surfaceContext: boolean
   /** Explicit `--trusted-host` authorities from this invocation. */
   trustedHosts: string[]
+  /** Explicit `--trusted-network` IPv4 CIDRs from this invocation, passed to the fence verbatim. */
+  trustedNetworks: string[]
 }
 ```
 
