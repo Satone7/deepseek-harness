@@ -45,6 +45,31 @@
 # `dsh.client` rows are the browser roster the modules node half scans into
 # window.__DSH_BOOT__; the modules row is simultaneously a host row.
 - insert:
+    # Local dev: LLM router for the web profile. Pool id `auto` maps requests
+    # whose provider or model is `auto` onto the local cpg gateway models.
+    - id: llm-router
+      name: '@deepseek-ai/dsh-llm-router'
+      config:
+        pools:
+          - id: auto
+            strategy: score-weighted
+            candidates:
+              - id: glm-5.3
+                provider: cpg
+                model: glm-5.3
+                weight: 2
+                maxInflight: 4
+              - id: deepseek-v4-pro
+                provider: cpg
+                model: deepseek-v4-pro
+                weight: 1
+                maxInflight: 2
+              - id: deepseek-v4-flash
+                provider: cpg
+                model: deepseek-v4-flash
+                weight: 3
+                maxInflight: 6
+
     - id: code-runtime
       name: '@deepseek-ai/dsh-code-runtime-worker-thread'
 
