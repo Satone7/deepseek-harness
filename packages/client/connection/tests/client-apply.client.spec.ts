@@ -4,7 +4,7 @@
  */
 import { Context } from '@deepseek-ai/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { apply, WEB_TRUST_GLOBAL, type ConnectionHandle } from '../src/client/index.ts'
+import { apply, WEB_TRUST_GLOBAL, WEB_VERSION_GLOBAL, type ConnectionHandle } from '../src/client/index.ts'
 import type { RpcMessage } from '../src/client/api.ts'
 import { RpcId } from '../src/client/api.ts'
 import { FixtureApiClient } from '../src/client/fixture.ts'
@@ -50,6 +50,7 @@ class FakeWebSocket extends EventTarget {
 afterEach(() => {
   delete (globalThis as Win).location
   ;(globalThis as Record<string, unknown>)[WEB_TRUST_GLOBAL] = undefined
+  ;(globalThis as Record<string, unknown>)[WEB_VERSION_GLOBAL] = undefined
   sockets.length = 0
   if (originalWebSocket === undefined) delete (globalThis as WebSocketGlobal).WebSocket
   else globalThis.WebSocket = originalWebSocket
@@ -101,6 +102,14 @@ describe('connection client apply', () => {
       trustedNetworks: [],
     }
     expect((await mount()).isLoopback).toBe(false)
+  })
+
+  it('mirrors the product version injected by the Web bundle, undefined without the injection', async () => {
+    ;(globalThis as Win).location = { hostname: 'localhost', search: '' }
+    ;(globalThis as Record<string, unknown>)[WEB_VERSION_GLOBAL] = '0.1.0-rc.7'
+    expect((await mount()).webVersion).toBe('0.1.0-rc.7')
+    ;(globalThis as Record<string, unknown>)[WEB_VERSION_GLOBAL] = undefined
+    expect((await mount()).webVersion).toBeUndefined()
   })
 
   it('keeps a non-matching page authority non-loopback even with trustedNetworks declared', async () => {

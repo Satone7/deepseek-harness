@@ -15,6 +15,7 @@
     "src/rpc-host.ts",
     "src/rpc.ts",
     "src/web-trust.ts",
+    "src/web-version.ts",
     "src/trusted-network.ts",
     "src/websocket-downlink.ts"
   ],

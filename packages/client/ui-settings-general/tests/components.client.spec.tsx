@@ -8,6 +8,7 @@ import { CloseLabel, HeaderContent, TriggerContent } from '../src/client/chrome.
 import type { TriggerContentProps } from '../src/client/chrome.tsx'
 import { SettingsDocumentAction } from '../src/client/SettingsDocumentAction.tsx'
 import { SettingsDocumentStore } from '../src/client/settings-document-store.ts'
+import { VersionRow } from '../src/client/VersionRow.tsx'
 import { en } from '../src/client/locales.ts'
 
 afterEach(cleanup)
@@ -55,6 +56,15 @@ describe('GeneralSection', () => {
     const { renderSlot } = mount()
     expect(renderSlot).toHaveBeenCalledWith('settings.general.item', {})
     expect(screen.getByTestId('slot-settings.general.item')).toBeTruthy()
+  })
+})
+
+describe('VersionRow', () => {
+  it('renders the localized title with the mirrored version value and no control', () => {
+    const { container } = render(<VersionRow {...kit} t={t} version="0.1.0-rc.7" />)
+    expect(screen.getByText('Version')).toBeTruthy()
+    expect(screen.getByText('0.1.0-rc.7')).toBeTruthy()
+    expect(container.querySelector('button')).toBeNull()
   })
 })
 

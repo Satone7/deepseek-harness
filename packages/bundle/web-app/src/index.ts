@@ -11,12 +11,13 @@
  */
 
 import { createRequire } from 'node:module'
+import { readFileSync } from 'node:fs'
 import { networkInterfaces } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { addHarnessSourceSection } from '@deepseek-ai/dsh-app-boot'
-import { WEB_TRUST_GLOBAL } from '@deepseek-ai/dsh-client-connection'
+import { WEB_TRUST_GLOBAL, WEB_VERSION_GLOBAL } from '@deepseek-ai/dsh-client-connection'
 import * as FrontendStatic from '@deepseek-ai/dsh-host-frontend-static'
 import type {} from '@deepseek-ai/cordis-plugin-loader'
 import type {} from '@deepseek-ai/dsh-host-webserver'
@@ -104,15 +105,33 @@ export function resolveLanTrust(
   return { lanAddresses, trustedHosts: [...lanAddresses, ...extra], trustedNetworks: [...networks] }
 }
 
-/** Build the inline script that exposes the LAN trust fence to the browser client. */
-function injectWebTrust(html: string, runtime: WebRuntimeValues): string {
-  const script = `<script>window.${WEB_TRUST_GLOBAL} = ${JSON.stringify({
-    trustedHosts: runtime.trustedHosts,
-    trustedNetworks: runtime.trustedNetworks,
-  })}</script>`
+/** The serving dsh release version, read from this bundle's checked-in package.json. */
+function productVersion(): string {
+  const manifest = JSON.parse(
+    readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8'),
+  ) as { version?: unknown }
+  /* v8 ignore next -- every install face ships package.json with a version. */
+  return typeof manifest.version === 'string' ? manifest.version : '0.0.0'
+}
+
+/** Splice one inline script immediately after the page's `<head>` open tag. */
+function injectHeadScript(html: string, script: string): string {
   const head = html.indexOf('<head>')
   if (head !== -1) return `${html.slice(0, head + 6)}${script}${html.slice(head + 6)}`
   return `${script}${html}`
+}
+
+/** Build the inline script that exposes the LAN trust fence to the browser client. */
+function injectWebTrust(html: string, runtime: WebRuntimeValues): string {
+  return injectHeadScript(html, `<script>window.${WEB_TRUST_GLOBAL} = ${JSON.stringify({
+    trustedHosts: runtime.trustedHosts,
+    trustedNetworks: runtime.trustedNetworks,
+  })}</script>`)
+}
+
+/** Build the inline script that exposes the serving product version to the browser client. */
+function injectWebVersion(html: string, version: string): string {
+  return injectHeadScript(html, `<script>window.${WEB_VERSION_GLOBAL} = ${JSON.stringify(version)}</script>`)
 }
 
 /** Model-visible orientation and acceptance boundary for sessions created through `dsh web`. */
@@ -161,10 +180,13 @@ export function apply(ctx: Context, config: Config): void {
   // Release dependent rows only after bind-dependent trust has been sampled once.
   ctx.provide(WEB_RUNTIME_SERVICE, runtime)
   // The browser connection client does not receive host-row config through the
-  // module graph, so expose the trust fence explicitly for it to mirror.
+  // module graph, so expose the trust fence and the serving product version
+  // explicitly for it to mirror.
   ctx.effect(
-    () => ctx.webServer.tapIndex(html => injectWebTrust(html, runtime)),
-    'web-app: LAN trust bootstrap',
+    () => ctx.webServer.tapIndex(
+      html => injectWebVersion(injectWebTrust(html, runtime), productVersion()),
+    ),
+    'web-app: page bootstrap globals',
   )
   ctx.plugin(FrontendStatic, { distIndex: internals.resolveDistIndex() })
   if (config.surfaceContext) {

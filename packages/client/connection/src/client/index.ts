@@ -11,6 +11,7 @@ import { WebApiClient } from './web-api-client.ts'
 import { createWebConnectionRpc } from './rpc.ts'
 import { isLoopbackHostname } from '../loopback-hostname.ts'
 import { WEB_TRUST_GLOBAL, type WebTrust } from '../web-trust.ts'
+import { WEB_VERSION_GLOBAL } from '../web-version.ts'
 import type { ClientConnectionRpc } from '../rpc.ts'
 
 // ---- Contract re-exports (browser-safe apiproxy channels + core types) ----
@@ -42,6 +43,7 @@ export {
 export type { ConnectionConfig, ConnectionSinks, ConnectionState }
 export type { ClientConnectionRpc } from '../rpc.ts'
 export { WEB_TRUST_GLOBAL, type WebTrust } from '../web-trust.ts'
+export { WEB_VERSION_GLOBAL } from '../web-version.ts'
 
 /** Observable Host description published by each completed connection handshake. */
 export interface HostDescriptionSource {
@@ -61,6 +63,13 @@ function readWebTrust(): Partial<WebTrust> | undefined {
   return (globalThis as TrustWindow)[WEB_TRUST_GLOBAL]
 }
 
+type VersionWindow = { [WEB_VERSION_GLOBAL]?: string }
+
+/** Read the product version injected by the host Web bundle, if present. */
+function readWebVersion(): string | undefined {
+  return (globalThis as VersionWindow)[WEB_VERSION_GLOBAL]
+}
+
 /**
  * The ctx.connection service API: the API client plus a one-shot
  * controller starter (the runtime plugin supplies sinks when its object layer
@@ -77,6 +86,12 @@ export interface ConnectionHandle {
    * use the full local configuration/native plane.
    */
   readonly isLoopback: boolean
+  /**
+   * Product version of the serving dsh Web bundle, mirrored from the page
+   * injection (`__DSH_WEB_VERSION__`). Absent when the page was not served by
+   * the Web host (component harnesses, non-browser contexts).
+   */
+  readonly webVersion: string | undefined
   /** Generation-scoped Host facts, including native path-open capability. */
   readonly hostDescription: HostDescriptionSource
   /** Generic logical RPC channels over the same Connection transport. */
@@ -130,6 +145,7 @@ function isTrustedPageHost(
 export function apply(ctx: Context): void {
   const pageLocation = typeof location === 'undefined' ? undefined : location
   const webTrust = readWebTrust()
+  const webVersion = readWebVersion()
   const trustedHosts = webTrust?.trustedHosts ?? []
   const trustedNetworks = webTrust?.trustedNetworks ?? []
   const fixture = pageLocation !== undefined && new URLSearchParams(pageLocation.search).has('fixture')
@@ -155,6 +171,7 @@ export function apply(ctx: Context): void {
     isLoopback: pageLocation === undefined
       || isLoopbackHostname(pageLocation.hostname)
       || (trustedNetworks.length > 0 && isTrustedPageHost(pageLocation, trustedHosts)),
+    webVersion,
     hostDescription: {
       getSnapshot: () => description,
       subscribe: (listener) => {

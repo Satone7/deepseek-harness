@@ -23,6 +23,7 @@ import type {
 import { SettingsRoot } from './SettingsRoot.tsx'
 import { CloseLabel, HeaderContent, TriggerContent } from './chrome.tsx'
 import { GeneralSection } from './GeneralSection.tsx'
+import { VersionRow } from './VersionRow.tsx'
 import { SettingsDocumentAction } from './SettingsDocumentAction.tsx'
 import type { SettingsDocumentActionInjected } from './SettingsDocumentAction.tsx'
 import { refreshDocumentIfLoaded, SettingsDocumentStore } from './settings-document-store.ts'
@@ -37,6 +38,7 @@ export type {
 export type { SettingsDocumentActionInjected, SettingsDocumentActionProps } from './SettingsDocumentAction.tsx'
 export type { SettingsDocumentState } from './settings-document-store.ts'
 export { SettingsDocumentStore } from './settings-document-store.ts'
+export type { VersionRowComponentProps, VersionRowInjected } from './VersionRow.tsx'
 export type { SettingsKey } from './locales.ts'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
@@ -175,4 +177,18 @@ export function apply(ctx: ClientContext): void {
     locale: NS,
     children: { 'settings.general.item': { kind: 'list', scope: 'root' } },
   }, GeneralSection))
+
+  // Product chrome that belongs to no single feature: the serving version,
+  // mirrored by the connection service from the Web bundle's page injection.
+  // A context the Web host did not serve carries no mirror and shows no row.
+  const { webVersion } = connection
+  if (webVersion !== undefined) {
+    ctx.slots.inject('settings.general.item', () => ctx.slots.register({
+      name: 'settings.general.item',
+      id: 'version',
+      order: 30,
+      locale: NS,
+      inject: () => ({ version: webVersion }),
+    }, VersionRow))
+  }
 }

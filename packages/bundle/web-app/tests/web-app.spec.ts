@@ -5,7 +5,7 @@
  * runtime's bind-dependent LAN snapshot.
  */
 
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -106,6 +106,11 @@ describe('web-app runtime glue', () => {
     expect(indexHtml).toContain('window.__DSH_WEB_TRUST__')
     expect(indexHtml).toContain('"trustedHosts":["192.168.1.5","lab.internal"]')
     expect(indexHtml).toContain('"trustedNetworks":[]')
+    // The version tap mirrors this bundle's package.json version verbatim.
+    const bundleVersion = JSON.parse(
+      readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+    ) as { version: string }
+    expect(indexHtml).toContain(`window.__DSH_WEB_VERSION__ = ${JSON.stringify(bundleVersion.version)}`)
 
     expect(seat()).toBeDefined() // frontend-static claimed the fallback
     expect(ctx.get('webRuntime')).toEqual({

@@ -814,6 +814,10 @@ function normalizeAria(snapshot: string, workspaceCwd: string): string {
     .replace(/\d{1,2}月\d{1,2}日 \d{2}:\d{2}/g, '{{clock}}')
     .replace(/(?<!\d)\d{1,2}:\d{2}:\d{2}(?:\.\d+)?(?:\s*[AP]M)?(?!\d)/gi, '{{clock}}')
     .replace(/(?<!\d)\d{2}:\d{2}(?!\d)/g, '{{clock}}')
+    // The General section's version row shows the serving release; the aria
+    // snapshot merges its label and value into one text node, and the scrub
+    // anchors on that label so only this value collapses.
+    .replace(/(- text: (?:版本|Version) )[^\n]+/g, '$1{{version}}')
 }
 
 /**
