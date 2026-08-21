@@ -51,6 +51,7 @@ const EXPECTED_TOOLS = [
   'send_message',
   'skill',
   'subagent',
+  'subagent_claude_code',
   'subagent_fork',
   'todo_write',
   'update_goal',

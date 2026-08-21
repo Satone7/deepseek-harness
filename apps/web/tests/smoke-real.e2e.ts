@@ -26,6 +26,7 @@ import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
 import { REPO_ROOT, connectFreshWorkspace, newEnglishPage, probeFreePort, requireDist, saveFailureShot } from './support.ts'
+import { WELCOME_NOTICE_ACK_FIELD, WELCOME_NOTICE_SETTINGS_NAMESPACE, WELCOME_NOTICE_VERSION } from './scaffold.ts'
 
 const WEB_SURFACE_PROMPT = fileURLToPath(new URL('./snapshots/web-runtime-context/web-surface-prompt.expected.md', import.meta.url))
 
@@ -506,6 +507,14 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY || notReady.length > 0)('web smoke
       },
     )
     baseUrl = (await waitForReadyLine(child)).replace('0.0.0.0', '127.0.0.1')
+    // This host boots a fresh $DSH_HOME, so the internal-testing notice is
+    // unacknowledged and its modal would intercept every page click; the
+    // fixture scaffold pre-acknowledges, and the real host takes the same
+    // acknowledgement over the wire before the first page load.
+    await rpc(baseUrl, 'settings.mutate', {
+      ns: WELCOME_NOTICE_SETTINGS_NAMESPACE,
+      ops: [{ op: 'set', path: [WELCOME_NOTICE_ACK_FIELD], value: WELCOME_NOTICE_VERSION }],
+    })
     browser = await chromium.launch()
     page = await newEnglishPage(browser)
     page.on('pageerror', e => pageErrors.push(String(e)))

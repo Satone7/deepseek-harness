@@ -43,3 +43,4 @@
   - button "Queue":
     - text: Queue
     - img
+  - text: Version {{version}}
