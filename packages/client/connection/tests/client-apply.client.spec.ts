@@ -4,13 +4,13 @@
  */
 import { Context } from '@deepseek-ai/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { apply, type ConnectionHandle } from '../src/client/index.ts'
+import { apply, WEB_TRUST_GLOBAL, WEB_VERSION_GLOBAL, type ConnectionHandle } from '../src/client/index.ts'
 import type { RpcMessage } from '../src/client/api.ts'
 import { RpcId } from '../src/client/api.ts'
 import { FixtureApiClient } from '../src/client/fixture.ts'
 import { WebApiClient } from '../src/client/web-api-client.ts'
 
-type Win = { location?: { hostname: string; search: string; origin?: string } }
+type Win = { location?: { hostname: string; host?: string; search: string; origin?: string } }
 type WebSocketGlobal = { WebSocket?: typeof WebSocket }
 
 const originalWebSocket = globalThis.WebSocket
@@ -49,6 +49,8 @@ class FakeWebSocket extends EventTarget {
 
 afterEach(() => {
   delete (globalThis as Win).location
+  ;(globalThis as Record<string, unknown>)[WEB_TRUST_GLOBAL] = undefined
+  ;(globalThis as Record<string, unknown>)[WEB_VERSION_GLOBAL] = undefined
   sockets.length = 0
   if (originalWebSocket === undefined) delete (globalThis as WebSocketGlobal).WebSocket
   else globalThis.WebSocket = originalWebSocket
@@ -81,6 +83,41 @@ describe('connection client apply', () => {
 
   it('reports non-loopback page authority through the connection handle', async () => {
     ;(globalThis as Win).location = { hostname: '192.0.2.20', search: '' }
+    expect((await mount()).isLoopback).toBe(false)
+  })
+
+  it('reads the LAN trust fence injected by the Web bundle', async () => {
+    ;(globalThis as Win).location = { hostname: '192.168.1.5', search: '' }
+    ;(globalThis as Record<string, unknown>)[WEB_TRUST_GLOBAL] = {
+      trustedHosts: ['192.168.1.5'],
+      trustedNetworks: ['192.168.1.0/24'],
+    }
+    expect((await mount()).isLoopback).toBe(true)
+  })
+
+  it('keeps trustedHosts alone non-loopback because privileged methods stay loopback-only', async () => {
+    ;(globalThis as Win).location = { hostname: '192.168.1.5', search: '' }
+    ;(globalThis as Record<string, unknown>)[WEB_TRUST_GLOBAL] = {
+      trustedHosts: ['192.168.1.5'],
+      trustedNetworks: [],
+    }
+    expect((await mount()).isLoopback).toBe(false)
+  })
+
+  it('mirrors the product version injected by the Web bundle, undefined without the injection', async () => {
+    ;(globalThis as Win).location = { hostname: 'localhost', search: '' }
+    ;(globalThis as Record<string, unknown>)[WEB_VERSION_GLOBAL] = '0.1.0-rc.7'
+    expect((await mount()).webVersion).toBe('0.1.0-rc.7')
+    ;(globalThis as Record<string, unknown>)[WEB_VERSION_GLOBAL] = undefined
+    expect((await mount()).webVersion).toBeUndefined()
+  })
+
+  it('keeps a non-matching page authority non-loopback even with trustedNetworks declared', async () => {
+    ;(globalThis as Win).location = { hostname: '10.0.0.8', search: '' }
+    ;(globalThis as Record<string, unknown>)[WEB_TRUST_GLOBAL] = {
+      trustedHosts: ['192.168.1.5'],
+      trustedNetworks: ['192.168.1.0/24'],
+    }
     expect((await mount()).isLoopback).toBe(false)
   })
 

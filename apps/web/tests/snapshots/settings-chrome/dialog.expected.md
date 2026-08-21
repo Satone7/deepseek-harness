@@ -43,3 +43,4 @@
   - button "排队发送":
     - text: 排队发送
     - img
+  - text: 版本 {{version}}

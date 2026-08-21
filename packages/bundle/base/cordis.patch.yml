@@ -302,6 +302,11 @@
       config:
         providerName: fork
 
+    # Claude Code provider. Loading registers the provider; no Claude process
+    # starts until a tool delegates to it.
+    - id: subagent-claude-code
+      name: '@deepseek-ai/dsh-subagent-claude-code'
+
     # Continuable background children are selected per delegation tool. The
     # separately loaded follow-up tool registers the one global `send_message`.
     - id: tool-subagent-control

@@ -10,6 +10,8 @@ import { FixtureApiClient } from './fixture.ts'
 import { WebApiClient } from './web-api-client.ts'
 import { createWebConnectionRpc, type RpcFetch } from './rpc.ts'
 import { isLoopbackHostname } from '../loopback-hostname.ts'
+import { WEB_TRUST_GLOBAL, type WebTrust } from '../web-trust.ts'
+import { WEB_VERSION_GLOBAL } from '../web-version.ts'
 import type { ClientConnectionRpc } from '../rpc.ts'
 
 // ---- Contract re-exports (browser-safe apiproxy channels + core types) ----
@@ -41,6 +43,8 @@ export {
 export type { ConnectionConfig, ConnectionSinks, ConnectionState }
 export type { ClientConnectionRpc } from '../rpc.ts'
 export type { RpcFetch } from './rpc.ts'
+export { WEB_TRUST_GLOBAL, type WebTrust } from '../web-trust.ts'
+export { WEB_VERSION_GLOBAL } from '../web-version.ts'
 
 /** Observable Host description published by each completed connection handshake. */
 export interface HostDescriptionSource {
@@ -52,6 +56,20 @@ export interface HostDescriptionSource {
 
 /** Required services (none — this is the wire root). */
 export const inject: string[] = []
+
+type TrustWindow = { [WEB_TRUST_GLOBAL]?: Partial<WebTrust> }
+
+/** Read the trust fence injected by the host Web bundle, if present. */
+function readWebTrust(): Partial<WebTrust> | undefined {
+  return (globalThis as TrustWindow)[WEB_TRUST_GLOBAL]
+}
+
+type VersionWindow = { [WEB_VERSION_GLOBAL]?: string }
+
+/** Read the product version injected by the host Web bundle, if present. */
+function readWebVersion(): string | undefined {
+  return (globalThis as VersionWindow)[WEB_VERSION_GLOBAL]
+}
 
 /**
  * Carrier override installed on the page global before plugin boot. The served
@@ -85,8 +103,20 @@ interface ClientTransportGlobal {
 export interface ConnectionHandle {
   /** Shared api client (fixture or real, decided at boot from the page URL). */
   readonly api: IApiClient
-  /** Whether the current page authority is loopback; non-browser contexts default to true. */
+  /**
+   * Whether the current page authority is loopback or a trusted-LAN authority.
+   * Non-browser contexts default to true. This is the client-side mirror of
+   * the Host fence's privileged-method widening: with `trustedNetworks`
+   * declared, a page served through a matching `trustedHosts` authority can
+   * use the full local configuration/native plane.
+   */
   readonly isLoopback: boolean
+  /**
+   * Product version of the serving dsh Web bundle, mirrored from the page
+   * injection (`__DSH_WEB_VERSION__`). Absent when the page was not served by
+   * the Web host (component harnesses, non-browser contexts).
+   */
+  readonly webVersion: string | undefined
   /** Generation-scoped Host facts, including the account home and native path-open capability. */
   readonly hostDescription: HostDescriptionSource
   /** Generic logical RPC channels over the same Connection transport. */
@@ -103,11 +133,46 @@ export interface ConnectionHandle {
 }
 
 /**
+ * Whether the current page authority appears in `trustedHosts`.
+ *
+ * This is intentionally browser-safe and mirrors the Host fence's authority
+ * matching for the common shapes the CLI derives (port-less LAN IP literals)
+ * and explicit `host:port` entries. It is only meaningful when the deployment
+ * has also declared `trustedNetworks`; `trustedHosts` alone is a header fence
+ * and does not widen privileged methods.
+ */
+function isTrustedPageHost(
+  page: { hostname: string; host?: string },
+  trustedHosts: readonly string[],
+): boolean {
+  const hostname = page.hostname.toLowerCase()
+  const host = page.host?.toLowerCase()
+  return trustedHosts.some((entry) => {
+    let entryUrl: URL
+    try {
+      entryUrl = new URL(`http://${entry}`)
+    } catch {
+      return false
+    }
+    if (entryUrl.hostname.toLowerCase() !== hostname) return false
+    if (entryUrl.port === '') return true
+    const port = page.host !== undefined
+      ? host?.split(':').pop()
+      : undefined
+    return port !== undefined && port === entryUrl.port
+  })
+}
+
+/**
  * Client plugin body: pick the api by page mode and provide ctx.connection.
  * @param ctx - client cordis context.
  */
 export function apply(ctx: Context): void {
   const pageLocation = typeof location === 'undefined' ? undefined : location
+  const webTrust = readWebTrust()
+  const webVersion = readWebVersion()
+  const trustedHosts = webTrust?.trustedHosts ?? []
+  const trustedNetworks = webTrust?.trustedNetworks ?? []
   const fixture = pageLocation !== undefined && new URLSearchParams(pageLocation.search).has('fixture')
   const fixtureClient = fixture ? new FixtureApiClient() : undefined
   const transport = (globalThis as ClientTransportGlobal).__DSH_TRANSPORT__
@@ -129,7 +194,10 @@ export function apply(ctx: Context): void {
   }
   const handle: ConnectionHandle = {
     api,
-    isLoopback: pageLocation === undefined || isLoopbackHostname(pageLocation.hostname),
+    isLoopback: pageLocation === undefined
+      || isLoopbackHostname(pageLocation.hostname)
+      || (trustedNetworks.length > 0 && isTrustedPageHost(pageLocation, trustedHosts)),
+    webVersion,
     hostDescription: {
       getSnapshot: () => description,
       subscribe: (listener) => {

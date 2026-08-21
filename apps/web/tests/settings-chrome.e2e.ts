@@ -65,6 +65,14 @@ describe('web e2e: settings modal and General preferences', () => {
     await dialog.getByRole('button', { name: '可写入工作区' }).waitFor({ timeout: 10_000 })
     await expect.poll(() => dialog.getByText('语言', { exact: true }).count(), { timeout: 5_000 }).toBe(1)
     await expect.poll(() => dialog.getByText('外观', { exact: true }).count(), { timeout: 5_000 }).toBe(1)
+    // The read-only version row mirrors the serving Web bundle's package
+    // version (the release the scaffold booted), exactly like `dsh --version`.
+    const bundleVersion = JSON.parse(
+      await readFile(fileURLToPath(new URL('../../../packages/bundle/web-app/package.json', import.meta.url)), 'utf8'),
+    ) as { version: string }
+    await expect.poll(() => dialog.getByText('版本', { exact: true }).count(), { timeout: 5_000 }).toBe(1)
+    await expect.poll(() => dialog.getByText(bundleVersion.version, { exact: true }).count(), { timeout: 5_000 })
+      .toBeGreaterThan(0)
     const openDocument = dialog.getByRole('button', { name: '打开配置文件' })
     await openDocument.waitFor({ timeout: 10_000 })
     let openRequests = 0

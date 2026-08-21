@@ -14,6 +14,8 @@
     "src/client/rpc.ts",
     "src/client/web-api-client.ts",
     "src/loopback-hostname.ts",
+    "src/web-trust.ts",
+    "src/web-version.ts",
     "src/rpc.ts"
   ],
   "references": [

@@ -238,7 +238,7 @@ describe('the shipped Web composition', () => {
       expect(toolNames(ctx, handle.agent).filter(name => name !== 'glob' && name !== 'grep')).toEqual([
         'ask_user_question', 'bash', 'create_goal', 'edit', 'exit_plan_mode',
         'get_goal', 'interrupt_agent', 'job_kill', 'job_list', 'job_output', 'list_agents', 'ralph', 'read', 'read_image', 'send_message', 'skill',
-        'subagent', 'subagent_fork', 'todo_write', 'update_goal', 'web_search',
+        'subagent', 'subagent_claude_code', 'subagent_fork', 'todo_write', 'update_goal', 'web_search',
         'workflow', 'write',
       ])
     } finally {
@@ -472,9 +472,6 @@ describe('product Bundle and user-preset intersection', () => {
       if (id === 'products-codex' || id === 'products-both') {
         composition = enablePresetTool(composition, 'tool-subagent-codex')
       }
-      if (id === 'products-claude' || id === 'products-both') {
-        composition = enablePresetTool(composition, 'tool-subagent-claude-code')
-      }
       const directory = join(userRoot, id)
       await mkdir(directory, { recursive: true })
       await writeFile(join(directory, 'agent.cordis.yml'), composition)
@@ -508,16 +505,14 @@ describe('product Bundle and user-preset intersection', () => {
 
   it('composes the intersection of installed Bundles and enabled preset rows', async () => {
     const enabledByPreset: Record<PresetId, Product[]> = {
-      'products-none': [],
-      'products-codex': ['codex'],
+      'products-none': ['claude-code'],
+      'products-codex': ['codex', 'claude-code'],
       'products-claude': ['claude-code'],
       'products-both': ['codex', 'claude-code'],
     }
     const scenarios: Array<{ installed: Product[]; presets: readonly PresetId[] }> = [
-      { installed: [], presets: ['products-both'] },
-      { installed: ['codex'], presets: ['products-both'] },
-      { installed: ['claude-code'], presets: ['products-both'] },
-      { installed: ['codex', 'claude-code'], presets: presetIds },
+      { installed: [], presets: presetIds },
+      { installed: ['codex'], presets: presetIds },
     ]
 
     for (const { installed, presets } of scenarios) {
@@ -527,7 +522,7 @@ describe('product Bundle and user-preset intersection', () => {
         expect(productCtx.subagents.list()
           .filter(name => name === 'codex' || name === 'claude-code')
           .sort())
-          .toEqual([...installed].sort())
+          .toEqual(['claude-code', ...installed].sort())
         for (const id of presets) {
           const handle = await productCtx.agents.create({
             sessionId: SessionId(`preset-${id}-${installed.join('-') || 'none'}-${randomUUID()}`),
@@ -535,7 +530,7 @@ describe('product Bundle and user-preset intersection', () => {
           })
           try {
             const productTools = enabledByPreset[id]
-              .filter(product => installed.includes(product))
+              .filter(product => product === 'claude-code' || installed.includes(product))
               .map(product => product === 'codex' ? 'subagent_codex' : 'subagent_claude_code')
               .sort()
             const tools = toolNames(productCtx, handle.agent)

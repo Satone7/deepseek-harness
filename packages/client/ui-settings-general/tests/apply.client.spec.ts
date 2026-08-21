@@ -11,6 +11,8 @@ import { CloseLabel, HeaderContent, TriggerContent } from '../src/client/chrome.
 import { GeneralSection } from '../src/client/GeneralSection.tsx'
 import { SettingsDocumentAction } from '../src/client/SettingsDocumentAction.tsx'
 import type { SettingsDocumentActionInjected } from '../src/client/SettingsDocumentAction.tsx'
+import { VersionRow } from '../src/client/VersionRow.tsx'
+import type { VersionRowInjected } from '../src/client/VersionRow.tsx'
 
 // These specs assert the shipped Chinese copy. The lane has no jsdom `window`,
 // so browser-language detection never runs and a fresh LocaleRuntime opens on
@@ -25,7 +27,7 @@ const SEATS = [
   ['settings.section', GeneralSection],
 ] as const
 
-async function bench(isLoopback = true) {
+async function bench(isLoopback = true, webVersion?: string) {
   const ctx = new Context()
   await ctx.plugin(SlotRegistry).await()
   const locale = new LocaleRuntime(ctx)
@@ -49,6 +51,7 @@ async function bench(isLoopback = true) {
   ctx.provide('connection', {
     api: { settings: { describe: settingsDescribe, openDocument: settingsOpenDocument } },
     isLoopback,
+    webVersion,
   } as never)
   new TestRemote(ctx)
   await ctx.plugin({ inject: [...settingsInject], apply: settingsApply }).await()
@@ -177,6 +180,24 @@ describe('ui-settings-general apply', () => {
     expect(b.settingsDescribe).not.toHaveBeenCalled()
     await fiber.dispose()
     for (const [name] of SEATS) expect(b.slots.entries(name)).toEqual([])
+  })
+
+  it('seats the read-only version row only when the connection mirrors a product version', async () => {
+    const b = await bench(true, '0.1.0-rc.7')
+    declare(b.slots)
+    const fiber = b.ctx.plugin({ inject: [...inject], apply })
+    await fiber.await()
+    await vi.waitFor(() => {
+      const entries = b.slots.entries('settings.general.item')
+      expect(entries).toHaveLength(1)
+      expect(entries[0]!.component).toBe(VersionRow)
+      expect(entries[0]!.options).toMatchObject({ id: 'version', order: 30 })
+      expect(entries[0]!.locale).toBe('settings')
+      const injected = entries[0]!.inject as unknown as () => VersionRowInjected
+      expect(injected()).toEqual({ version: '0.1.0-rc.7' })
+    })
+    await fiber.dispose()
+    expect(b.slots.entries('settings.general.item')).toEqual([])
   })
 
   it('re-registers after an HMR collapse of the declaring chain (stale disposers must not block)', async () => {
