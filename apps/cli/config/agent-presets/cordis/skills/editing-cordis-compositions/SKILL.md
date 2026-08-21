@@ -123,9 +123,9 @@ After a clean mount-validation, ask the user to start a session on the new prese
 
 ## Native product subagents
 
-Codex and Claude Code providers belong on the host plane but are not installed by production `dsh`. The active Profile must install and mount the selected provider before a preset can expose its ordinary delegation-tool row; never move a product provider into the preset and never add a product-specific settings field.
+Codex and Claude Code providers belong on the host plane. In this repository's `dsh-base`, Claude Code is installed and mounted once on the host plane, and the shipped full presets enable its `subagent_claude_code` tool row. Codex remains an optional provider not installed by production `dsh`; to enable it, the active Profile must install and mount `@deepseek-ai/dsh-subagent-codex` before a preset can expose its ordinary delegation-tool row. Never move a product provider into the preset and never add a product-specific settings field.
 
-Copy these disabled templates from a shipped full preset and remove `disabled` only for the products the user requested:
+For custom presets, use these templates; remove `disabled` from the Codex row only if the user requested Codex, and include the Claude row to enable Claude Code:
 
 ```yaml
 - id: tool-subagent-codex
@@ -139,7 +139,6 @@ Copy these disabled templates from a shipped full preset and remove `disabled` o
 
 - id: tool-subagent-claude-code
   name: '@deepseek-ai/dsh-tool-subagent'
-  disabled: true
   config:
     provider: claude-code
     toolName: subagent_claude_code
@@ -147,7 +146,7 @@ Copy these disabled templates from a shipped full preset and remove `disabled` o
     maxDepth: provider-managed
 ```
 
-The two rows are independent. Leaving both disabled preserves the copied preset, enabling one exposes only that product tool, and enabling both exposes both. Production `dsh` does not install or mount either optional provider: before enabling a row, the Profile must install the matching `@deepseek-ai/dsh-subagent-codex` or `@deepseek-ai/dsh-subagent-claude-code` package and mount it once on the host plane. A preset cannot provide that host dependency. `backgroundMode: one-shot` keeps omitted or `false` calls in the foreground and lets explicit `run_in_background: true` return a generic Job id. Full presets already carry `tool-jobs`, while the base host carries the job registry; retain both so `job_output`, `job_list`, `job_kill`, cancellation, and completion notices stay available. The host must also provide `codex` or `claude` on `PATH`; the preset does not install, authenticate, select a model for, or probe either product.
+The two rows are independent. Leaving Codex disabled and omitting the Claude row preserves a copied preset without product tools; enabling Codex exposes only that product tool, and including the Claude row exposes Claude Code. Production `dsh` does not install or mount Codex: before enabling a Codex row, the Profile must install `@deepseek-ai/dsh-subagent-codex` and mount it once on the host plane. A preset cannot provide that host dependency. `backgroundMode: one-shot` keeps omitted or `false` calls in the foreground and lets explicit `run_in_background: true` return a generic Job id. Full presets already carry `tool-jobs`, while the base host carries the job registry; retain both so `job_output`, `job_list`, `job_kill`, cancellation, and completion notices stay available. The host must also provide `codex` or `claude` on `PATH`; the preset does not install, authenticate, select a model for, or probe either product.
 
 ## What not to move into a preset
 

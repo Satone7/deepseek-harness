@@ -216,7 +216,7 @@ describe('the shipped Web composition', () => {
       expect(toolNames(ctx, handle.agent).filter(name => name !== 'glob' && name !== 'grep')).toEqual([
         'ask_user_question', 'bash', 'create_goal', 'edit', 'exit_plan_mode',
         'get_goal', 'interrupt_agent', 'job_kill', 'job_list', 'job_output', 'list_agents', 'ralph', 'read', 'read_image', 'send_message', 'skill',
-        'subagent', 'subagent_fork', 'todo_write', 'update_goal', 'web_search',
+        'subagent', 'subagent_claude_code', 'subagent_fork', 'todo_write', 'update_goal', 'web_search',
         'workflow', 'write',
       ])
     } finally {
@@ -449,9 +449,6 @@ describe('product subagent rows in user presets', () => {
       if (id === 'products-codex' || id === 'products-both') {
         composition = enablePresetTool(composition, 'tool-subagent-codex')
       }
-      if (id === 'products-claude' || id === 'products-both') {
-        composition = enablePresetTool(composition, 'tool-subagent-claude-code')
-      }
       const directory = join(userRoot, id)
       await mkdir(directory, { recursive: true })
       await writeFile(join(directory, 'agent.cordis.yml'), composition)
@@ -459,7 +456,6 @@ describe('product subagent rows in user presets', () => {
     productCtx = await bootWeb(settingsFile, [
       { insert: [
         { id: 'subagent-codex', name: '@deepseek-ai/dsh-subagent-codex' },
-        { id: 'subagent-claude-code', name: '@deepseek-ai/dsh-subagent-claude-code' },
       ] },
       {
         id: 'agent-presets',
@@ -479,10 +475,10 @@ describe('product subagent rows in user presets', () => {
     await productCtx.fiber.dispose()
   })
 
-  it('composes none, either product, or both without changing the shared host registry', async () => {
+  it('composes the default Claude row, either product, or both without changing the shared host registry', async () => {
     const expected = new Map<string, string[]>([
-      ['products-none', []],
-      ['products-codex', ['subagent_codex']],
+      ['products-none', ['subagent_claude_code']],
+      ['products-codex', ['subagent_claude_code', 'subagent_codex']],
       ['products-claude', ['subagent_claude_code']],
       ['products-both', ['subagent_claude_code', 'subagent_codex']],
     ])
