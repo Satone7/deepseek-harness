@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>同步审计：0.1.1-rc.1 → 0.1.1-rc.2（2026-08-24）</title>
+<title>DeepSeek Harness upstream 同步审查与更新日志 · 0.1.1-rc.1 → 0.1.1-rc.2</title>
 <style>
 /* ═══════════════════════════════════════════════════════════════
    HTML Report Style — Design System v3
@@ -117,7 +117,7 @@ hr{margin:1.75rem 0;border:none;border-top:1px solid var(--line)}
 <body>
 
 <header>
-  <h1>同步审计：dsh 0.1.1-rc.1 → 0.1.1-rc.2</h1>
+  <h1>upstream 同步审查与更新日志 · 0.1.1-rc.1 → 0.1.1-rc.2</h1>
   <p class="lede">首次按 fork-upstream-sync SKILL 执行的同步窗口：35 个上游 commit 合入、4 处冲突全部落在预测热点、门禁与 staging 全绿、rc.2 已部署上线。同窗口完成终端/文件预览根因修复与信任栅栏收口。</p>
   <div class="meta">
     <span>日期：2026-08-24</span>
@@ -146,6 +146,7 @@ hr{margin:1.75rem 0;border:none;border-top:1px solid var(--line)}
   <ol>
     <li><a href="#incident">前置事故：终端与文件预览失效（根因）</a></li>
     <li><a href="#scope">变更规模与认领面命中</a></li>
+    <li><a href="#upstream-log">上游更新日志（按主题）</a></li>
     <li><a href="#conflicts">冲突决议</a></li>
     <li><a href="#gates">门禁结果</a></li>
     <li><a href="#plugin">插件窗口（peer 判定 + staging）</a></li>
@@ -181,8 +182,42 @@ hr{margin:1.75rem 0;border:none;border-top:1px solid var(--line)}
   </dl>
 </section>
 
+<section id="upstream-log">
+  <h2>3. 上游更新日志（按主题）</h2>
+  <p>rc.1 → rc.2 共 35 个非合并提交，主线是<strong>图像管线统一化</strong>（约六成提交），其余为 DeepSeek Files API 修复、附件兼容性与一次权限修复回退。与 fork 的五个 feature 均不在同一领域，故认领面命中集中在连接层文档与 package.json 的机械碰撞，无语义交互。</p>
+
+  <h3>3.1 图像管线统一化（主线）</h3>
+  <ul>
+    <li><strong>统一请求管线</strong>：<code>feat(images): unify master and Files request pipeline</code>——主线会话请求与 Files API 上传管线合并为一条；配套 <code>fix(images)</code> 两处评审修复与 <code>parse listed missing Files ids</code> 修正。</li>
+    <li><strong>规范化落盘编码</strong>：<code>feat(attachment-local): store a deterministic canonical image encoding</code>——附件本地存储改为确定性规范编码；<code>refactor(attachment): saveImage returns the canonical ref beside source facts</code>、<code>refactor(attachment): normalize image storage API</code> 随之重整存储 API；<code>refactor(image): remove region reads</code> 移除区域读取路径。</li>
+    <li><strong>read_image 工具增强</strong>：<code>feat(tool-fs): read_image reports downscaled dimensions and coordinate scale</code>——工具返回降采样后尺寸与坐标缩放比（<strong>模型可见行为变化</strong>：图像坐标类指令的尺度语义更明确）。</li>
+    <li><strong>上传包络扩展</strong>：<code>feat(images): expand source upload envelope</code>。</li>
+    <li><strong>决策文档组</strong>：canonical admission 决策记录、attachment read quarantine 提案、统一请求图像管理设计 PR 锚定、module graph 与双语 config catalog 刷新。</li>
+  </ul>
+
+  <h3>3.2 DeepSeek Files API 与超时</h3>
+  <ul>
+    <li><code>fix(deepseek): decouple files and stream timeouts</code>——文件上传与流式响应超时解耦（此前一方超时会误伤另一方）。</li>
+    <li><code>fix(llm-deepseek): fall back when Files resolution fails</code>——Files 解析失败时回退，不再硬失败。</li>
+    <li>配套 e2e：<code>expose Files API e2e failures</code>、<code>print vision failure facts</code>。</li>
+  </ul>
+
+  <h3>3.3 附件兼容性与预算</h3>
+  <ul>
+    <li><code>fix(attachment): accept opaque WebP alpha omission</code>——接受不带 alpha 通道声明的 WebP。</li>
+    <li><code>fix(attachment-local): exclude metadata carriers and animation from passthrough; validate the canonical budget up front</code>——元数据载体图与动画图不再走直通路径，规范预算前置校验。</li>
+    <li><code>fix(attachment-local): keep reference field order stable for logged fixtures</code>——引用字段顺序稳定化（影响日志快照）。</li>
+  </ul>
+
+  <h3>3.4 回退与测试稳定化</h3>
+  <ul>
+    <li><code>Revert "fix/permission-copy-and-default"</code>——上游撤回了权限复制与默认值修复（连同快照同步）；若此前依赖该行为需留意。</li>
+    <li><code>test(snapshot): stabilize persisted-turn coverage</code>、image-region 工具退役的 composition 清理、i18n 图像文档链接修复。</li>
+  </ul>
+</section>
+
 <section id="conflicts">
-  <h2>3. 冲突决议</h2>
+  <h2>4. 冲突决议</h2>
   <div class="tbl-wrap">
     <table class="dense">
       <caption>表 1：冲突文件与决议（rerere 已记录，下次同类冲突自动复用）</caption>
@@ -198,7 +233,7 @@ hr{margin:1.75rem 0;border:none;border-top:1px solid var(--line)}
 </section>
 
 <section id="gates">
-  <h2>4. 门禁结果</h2>
+  <h2>5. 门禁结果</h2>
   <div class="tbl-wrap">
     <table class="dense">
       <caption>表 2：同步窗口门禁（SKILL 第 3 步）</caption>
@@ -215,7 +250,7 @@ hr{margin:1.75rem 0;border:none;border-top:1px solid var(--line)}
 </section>
 
 <section id="plugin">
-  <h2>5. 插件窗口（peer 判定 + staging）</h2>
+  <h2>6. 插件窗口（peer 判定 + staging）</h2>
   <dl class="kv">
     <div><dt>插件</dt><dd>dsh-better-sidebar：pin 0.15.2（npm 最新亦为 0.15.2，无新版本）</dd></div>
     <div><dt>peer 机器判定</dt><dd>0.15.2 的 14 个 <code>@deepseek-ai/dsh-*</code> peer（<code>^0.1.0-rc.8</code>）对 0.1.1-rc.2 <strong>形式上全部不满足</strong>（预发布元组规则）</dd></div>
@@ -226,7 +261,7 @@ hr{margin:1.75rem 0;border:none;border-top:1px solid var(--line)}
 </section>
 
 <section id="deploy">
-  <h2>6. 部署与线上验证</h2>
+  <h2>7. 部署与线上验证</h2>
   <p><code>deploy/install.sh</code>：隔离 store 冷装 → 原子切换 profile → systemd 重启 → 冒烟尾门禁。结果：</p>
   <ul class="source-list">
     <li>线上版本：0.1.1-rc.2（L7 注入版本 == 仓库版本）</li>
@@ -237,15 +272,16 @@ hr{margin:1.75rem 0;border:none;border-top:1px solid var(--line)}
 </section>
 
 <section id="followups">
-  <h2>7. 遗留项</h2>
+  <h2>8. 遗留项</h2>
+  <div class="callout warn">
+    <p><strong>⚠️ 维护策略（2026-08-24 用户确认）：</strong>本 fork <strong>不向上游提交 PR</strong>——所有改动保持 fork-local，此前文档中的「上游化候选」（apiproxy RPC id 修复、trustedNetworks 栅栏）仅作为 fork 内维护项继续存在；二次冲突规则的出路只剩「插件化 / fork-only bundle」一条。另：每次同步窗口的报告必须包含<strong>上游更新日志（按主题）</strong>一节（本报告 §3），统一存放于 <code>fork-reports/</code>。</p>
+  </div>
   <div class="tbl-wrap">
     <table class="dense">
       <caption>表 3：后续动作</caption>
       <thead><tr><th>项</th><th>状态</th><th>说明</th></tr></thead>
       <tbody>
-        <tr><td>apiproxy RPC id 修复上游化</td><td><span class="badge info">候选</span></td><td>自包含、带测试（fork commit 16fa8f2f6d），第一个 upstream PR 的最佳形状</td></tr>
-        <tr><td>trustedNetworks 栅栏上游化</td><td><span class="badge info">候选</span></td><td>issue 先行探设计共识（上游尚无任何 trustedNetworks 等价物）</td></tr>
-        <tr><td>llm-router 分支处置</td><td><span class="badge warn">未决</span></td><td>feat/dsh-llm-router 仍未合入或归档，继续升值中；限一周二选一</td></tr>
+        <tr><td>llm-router 分支处置</td><td><span class="badge ok">已归档（2026-08-24）</span></td><td>用户决定不再开发；分支已更名为 <code>archive/dsh-llm-router</code>，两个 feat 提交（多 provider 路由插件 + web profile 启用）保留可查</td></tr>
         <tr><td>fence-as-service</td><td><span class="badge info">触发条件未到</span></td><td>出现第二个自带路由的插件时启动；当前过滤修法 + SURFACES 约束兜底</td></tr>
         <tr><td>每日 drift 信号（GitHub Actions）</td><td><span class="badge info">可选</span></td><td>当前以 SKILL 第 1 步人工/会话触发为准；持续同步频率高时可加 fork-drift workflow</td></tr>
       </tbody>

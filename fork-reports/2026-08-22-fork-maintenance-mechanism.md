@@ -212,3 +212,9 @@ deploy/
 **首次同步窗口（rc.1→rc.2）验证了机制**：冲突 4 处全部落在 sync-scope 预测热点（`client/connection`）；门禁全绿（typecheck/build/530 测试/check）；staging 绿；部署冒烟 7 层全绿；rerere 已记录决议。审计见 [2026-08-24 报告](2026-08-24-upstream-0.1.1-rc.1-to-0.1.1-rc.2.html)。
 
 **同窗口附带修复**（终端/预览失效的完整因果链见审计报告 §1）：插件升级 0.12.3→0.15.2；fork 自引入的 client-face 构建断裂（smoke-real.e2e.ts import scaffold 未进 tsconfig exclude）。
+
+**策略更新（2026-08-24 用户确认，晚于本节初稿）**
+
+- **不向上游提交 PR**：所有 fork 改动保持 fork-local，永久策略。§3 支柱 B 的「上游化候选」（apiproxy RPC id、trustedNetworks 栅栏）与 §4 落地顺序的 ⑦⑨ 上游 issue/PR 项作废；二次冲突规则（§2 原则 3、支柱 B）的出路只剩「插件化 / fork-only bundle」。
+- **feat/dsh-llm-router 已归档**：更名 `archive/dsh-llm-router`（提交保留可查），不再开发；F6 与「限一周二选一」的遗留项关闭。
+- **同步报告规范**：每次同步窗口产出一份中文 HTML 报告（审查 + **上游更新日志（按主题）** 合一），统一存放 `fork-reports/`，命名沿用 2026-08-21 起的惯例；「上游更新日志」是用户固定要读的部分，不许省略。

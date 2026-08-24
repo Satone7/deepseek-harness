@@ -5,7 +5,7 @@
 ## 第一宗旨：上游同步零阻碍
 
 1. **加法优先**：fork 改动尽量新增文件；修改上游文件必须同时 ① 在 `fork-reports/SURFACES.md` 认领表登记（`node scripts/fork/sync-scope.mjs snapshot` 刷新，`check` 强制每个 M/D 被认领）② 带兜底测试。
-2. **二次冲突规则**：同一上游文件在两次同步窗口都冲突 → 停止修补，向用户提出重构为 fork-only bundle/插件或上游化。
+2. **二次冲突规则**：同一上游文件在两次同步窗口都冲突 → 停止修补，向用户提出重构为 fork-only bundle/插件。**不向上游提交 PR**（2026-08-24 用户确认的永久策略）——上游化不是任何冲突或改进的出路，所有 fork 改动保持 fork-local。
 3. **受保护路径绝对不碰**：根 `package.json`、`pnpm-workspace.yaml`、`.github/**`、`CLAUDE.md`。fork 脚本一律住 `scripts/fork/`（`node scripts/fork/x.mjs` 直调），部署资产住 `deploy/`（上游均无这些目录，纯加法）。
 4. **上游同步一律走 fork-upstream-sync SKILL**（`.agents/skills/fork-upstream-sync/SKILL.md`）：漂移检查 → `--no-ff` merge tag → SURFACES 命中面审查 → 最小充分门禁 → 插件 staging → `deploy/install.sh` → HTML 审计报告落盘。
 
@@ -25,3 +25,5 @@
 
 11. 上游 release notes 出现 `SESSION_FORMAT_VERSION` 变化 → deploy 前归档 `~/.dsh/sessions`（pre-release 无格式兼容承诺）。
 12. fork 文档/审计报告进 `fork-reports/`（不进 doc-sync 翻译对），审计报告用中文 HTML。
+13. **每次同步窗口的报告必含「上游更新日志（按主题）」一节**——向用户介绍上游本次更新内容；报告统一存放 `fork-reports/`，命名 `YYYY-MM-DD-upstream-<from>-to-<to>.html`，一次同步一份（审查+更新日志合一，沿用 2026-08-21 起的惯例）。
+14. 废弃分支归档为 `archive/<名>` 前缀分支保留提交（如 `archive/dsh-llm-router`），不删除历史。

@@ -36,7 +36,7 @@ git merge --no-ff <tag>                           # 用户规则：merge 一律 
 - 命中认领面的文件：逐个对照 SURFACES 认领表里该 feature 的兜底测试；
 - **认领面在上游消失**（重命名/删除告警）：上游动了 fork 的命门，逐条核实后更新认领表 globs；
 - 历史热点：`packages/client/connection`（trustedNetworks 是 fork 独有，上游持续在改 Host 栅栏）、`packages/bundle/web-app/src/index.ts`（上游改过 index 注入表机制）。
-- 同一文件**第二次**同步冲突 → 停下来向用户提出插件化/上游化，不硬解。
+- 同一文件**第二次**同步冲突 → 停下来向用户提出插件化（fork-only bundle/插件）重构，不硬解。**本 fork 不向上游提交 PR**（2026-08-24 用户确认的永久策略）——上游化不是选项，所有 fork 改动保持 fork-local。
 
 ## 3. 门禁（按最小充分集，不盲跑全量）
 
@@ -71,7 +71,9 @@ bash deploy/install.sh                                    # 冷装+切换+重启
 
 ## 6. 落盘（每个窗口必做）
 
-1. 审计报告 `fork-reports/YYYY-MM-DD-upstream-<from>-to-<to>.html`（中文；内容：变更规模、认领面命中与冲突决议、门禁与冒烟结果、插件判定、遗留项）。
+1. 同步报告 `fork-reports/YYYY-MM-DD-upstream-<from>-to-<to>.html`（中文，一次同步一份，统一存放于 `fork-reports/`，命名沿用既有惯例）。必含两块内容：
+   - **上游更新日志（按主题）**——向用户介绍上游本次更新了什么（主题归纳 + 模型可见行为变化 + 与 fork 面的交互），这是用户固定要读的部分，不许省略；
+   - 同步审查——变更规模、认领面命中与冲突决议、门禁与冒烟结果、插件判定、遗留项。
 2. `fork-reports/INDEX.md` 加行。
 3. `node scripts/fork/sync-scope.mjs snapshot`（若认领表或 delta 有变化）。
 

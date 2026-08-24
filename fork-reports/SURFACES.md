@@ -46,7 +46,7 @@
     "test": "packages/bundle/base/tests/base.spec.ts"
   },
   {
-    "feature": "fix(apiproxy): 非安全上下文 RPC id（上游化候选 #1）",
+    "feature": "fix(apiproxy): 非安全上下文 RPC id",
     "globs": [
       "packages/host/apiproxy/**",
       "packages/util/random-uuid/**",
@@ -75,7 +75,7 @@
 
 ## 当前 delta 快照（生成，勿手改）
 
-统计：152 个文件（M/D 83，A 69）；已认领 M/D：151。
+统计：153 个文件（M/D 83，A 70）；已认领 M/D：152。
 
 | 状态 | 路径 | 认领 |
 |---|---|---|
@@ -148,6 +148,7 @@
 | M | `docs/config-catalog.zh.md` | 认领:feat(connection): LAN trusted-network fence |
 | A | `fork-reports/2026-08-21-upstream-rc.7-to-0.1.1-rc.1.html` | 认领:同步合并产物（目录重生成/lockfile，语义跟随上游） |
 | A | `fork-reports/2026-08-22-fork-maintenance-mechanism.md` | 认领:同步合并产物（目录重生成/lockfile，语义跟随上游） |
+| A | `fork-reports/2026-08-24-upstream-0.1.1-rc.1-to-0.1.1-rc.2.html` | 认领:同步合并产物（目录重生成/lockfile，语义跟随上游） |
 | A | `fork-reports/INDEX.md` | 认领:同步合并产物（目录重生成/lockfile，语义跟随上游） |
 | A | `fork-reports/SURFACES.md` | 认领:同步合并产物（目录重生成/lockfile，语义跟随上游） |
 | M | `packages/bundle/base/README.i18n.yaml` | 认领:feat(base): 默认挂载 claude-code 子代理 |
@@ -205,29 +206,29 @@
 | M | `packages/client/web/src/platform.ts` | 认领:feat(connection): LAN trusted-network fence |
 | M | `packages/client/web/src/seed.ts` | 认领:feat(connection): LAN trusted-network fence |
 | M | `packages/extensions/cordis-client-runner/src/client/slot-catalog.ts` | 认领:同步合并产物（目录重生成/lockfile，语义跟随上游） |
-| M | `packages/host/apiproxy/src/fetch/client.ts` | 认领:fix(apiproxy): 非安全上下文 RPC id（上游化候选 #1） |
-| M | `packages/host/apiproxy/tests/client-handler.spec.ts` | 认领:fix(apiproxy): 非安全上下文 RPC id（上游化候选 #1） |
-| M | `packages/host/apiproxy/tsconfig.json` | 认领:fix(apiproxy): 非安全上下文 RPC id（上游化候选 #1） |
-| M | `packages/llm/llm/package.json` | 认领:fix(apiproxy): 非安全上下文 RPC id（上游化候选 #1） |
-| M | `packages/llm/llm/src/message.ts` | 认领:fix(apiproxy): 非安全上下文 RPC id（上游化候选 #1） |
-| M | `packages/llm/llm/tsconfig.json` | 认领:fix(apiproxy): 非安全上下文 RPC id（上游化候选 #1） |
+| M | `packages/host/apiproxy/src/fetch/client.ts` | 认领:fix(apiproxy): 非安全上下文 RPC id |
+| M | `packages/host/apiproxy/tests/client-handler.spec.ts` | 认领:fix(apiproxy): 非安全上下文 RPC id |
+| M | `packages/host/apiproxy/tsconfig.json` | 认领:fix(apiproxy): 非安全上下文 RPC id |
+| M | `packages/llm/llm/package.json` | 认领:fix(apiproxy): 非安全上下文 RPC id |
+| M | `packages/llm/llm/src/message.ts` | 认领:fix(apiproxy): 非安全上下文 RPC id |
+| M | `packages/llm/llm/tsconfig.json` | 认领:fix(apiproxy): 非安全上下文 RPC id |
 | M | `packages/subagent/subagent-claude-code/README.i18n.yaml` | 认领:feat(base): 默认挂载 claude-code 子代理 |
 | M | `packages/subagent/subagent-claude-code/README.md` | 认领:feat(base): 默认挂载 claude-code 子代理 |
 | M | `packages/subagent/subagent-claude-code/README.zh.md` | 认领:feat(base): 默认挂载 claude-code 子代理 |
-| A | `packages/util/random-uuid/README.i18n.yaml` | 认领:fix(apiproxy): 非安全上下文 RPC id（上游化候选 #1） |
-| A | `packages/util/random-uuid/README.md` | 认领:fix(apiproxy): 非安全上下文 RPC id（上游化候选 #1） |
-| A | `packages/util/random-uuid/README.zh.md` | 认领:fix(apiproxy): 非安全上下文 RPC id（上游化候选 #1） |
-| A | `packages/util/random-uuid/package.json` | 认领:fix(apiproxy): 非安全上下文 RPC id（上游化候选 #1） |
-| A | `packages/util/random-uuid/src/index.ts` | 认领:fix(apiproxy): 非安全上下文 RPC id（上游化候选 #1） |
-| A | `packages/util/random-uuid/src/invariant.ts` | 认领:fix(apiproxy): 非安全上下文 RPC id（上游化候选 #1） |
-| A | `packages/util/random-uuid/tests/random-uuid.spec.ts` | 认领:fix(apiproxy): 非安全上下文 RPC id（上游化候选 #1） |
-| A | `packages/util/random-uuid/tsconfig.json` | 认领:fix(apiproxy): 非安全上下文 RPC id（上游化候选 #1） |
+| A | `packages/util/random-uuid/README.i18n.yaml` | 认领:fix(apiproxy): 非安全上下文 RPC id |
+| A | `packages/util/random-uuid/README.md` | 认领:fix(apiproxy): 非安全上下文 RPC id |
+| A | `packages/util/random-uuid/README.zh.md` | 认领:fix(apiproxy): 非安全上下文 RPC id |
+| A | `packages/util/random-uuid/package.json` | 认领:fix(apiproxy): 非安全上下文 RPC id |
+| A | `packages/util/random-uuid/src/index.ts` | 认领:fix(apiproxy): 非安全上下文 RPC id |
+| A | `packages/util/random-uuid/src/invariant.ts` | 认领:fix(apiproxy): 非安全上下文 RPC id |
+| A | `packages/util/random-uuid/tests/random-uuid.spec.ts` | 认领:fix(apiproxy): 非安全上下文 RPC id |
+| A | `packages/util/random-uuid/tsconfig.json` | 认领:fix(apiproxy): 非安全上下文 RPC id |
 | M | `pnpm-lock.yaml` | 认领:同步合并产物（目录重生成/lockfile，语义跟随上游） |
 | A | `scripts/fork/browser-probe.mjs` | 认领:同步合并产物（目录重生成/lockfile，语义跟随上游） |
 | A | `scripts/fork/peer-check.mjs` | 认领:同步合并产物（目录重生成/lockfile，语义跟随上游） |
 | A | `scripts/fork/plugin-stage.sh` | 认领:同步合并产物（目录重生成/lockfile，语义跟随上游） |
 | A | `scripts/fork/smoke.sh` | 认领:同步合并产物（目录重生成/lockfile，语义跟随上游） |
 | A | `scripts/fork/sync-scope.mjs` | 认领:同步合并产物（目录重生成/lockfile，语义跟随上游） |
-| M | `scripts/verify-package-readme-limitations.ts` | 认领:fix(apiproxy): 非安全上下文 RPC id（上游化候选 #1） |
-| M | `scripts/verify-package-readme-model-experience.ts` | 认领:fix(apiproxy): 非安全上下文 RPC id（上游化候选 #1） |
-| M | `tsconfig.host.json` | 认领:fix(apiproxy): 非安全上下文 RPC id（上游化候选 #1） |
+| M | `scripts/verify-package-readme-limitations.ts` | 认领:fix(apiproxy): 非安全上下文 RPC id |
+| M | `scripts/verify-package-readme-model-experience.ts` | 认领:fix(apiproxy): 非安全上下文 RPC id |
+| M | `tsconfig.host.json` | 认领:fix(apiproxy): 非安全上下文 RPC id |
