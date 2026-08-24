@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>同步审计：0.1.1-rc.1 → 0.1.1-rc.2（2026-08-24）</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   HTML Report Style — Design System v3
+   Technical-report theme: dark header + card panels, dense data
+   tables with sticky headers, spec key-value grids, stat tiles,
+   diff lines, collapsible raw output, print-ready.
+   ═══════════════════════════════════════════════════════════════ */
+:root{color-scheme:light;--bg:#f5f7fa;--panel:#fff;--ink:#17212f;--muted:#5c6b7a;--line:#d8e0ea;--soft:#eef4fb;--accent:#0b6fcb;--accent-ink:#074d8d;--accent-soft:rgba(11,111,203,.14);--ok:#176b4d;--ok-bg:#e8f6ef;--warn:#9a5b00;--warn-bg:#fff4db;--risk:#b42318;--risk-bg:#ffeceb;--code-bg:#eef1f5;--mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Noto Sans CJK SC","Microsoft YaHei",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+img,svg,video{max-width:100%;height:auto}
+::selection{background:#bcd9f7}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+header{padding:42px 24px 34px;background:#132238;color:#fff;border-bottom:5px solid var(--accent)}
+header h1{max-width:980px;font-size:clamp(28px,5vw,44px);font-weight:760;line-height:1.25}
+header .lede{max-width:980px;margin-top:12px;color:#c3d2e5;font-size:clamp(15px,2vw,17px);line-height:1.55}
+.meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.meta span{display:inline-flex;align-items:center;min-height:28px;padding:4px 10px;border:1px solid rgba(255,255,255,.24);border-radius:6px;background:rgba(255,255,255,.1);font-size:14px;white-space:nowrap}
+main{max-width:1180px;margin:0 auto;padding:28px 24px 56px}
+.summary,.toc,section{background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.summary{padding:22px;margin-bottom:20px}
+.toc{padding:18px 22px}
+section{padding:24px;margin-top:20px;transition:border-color .25s,box-shadow .25s}
+section[id],h2[id],h3[id],h4[id]{scroll-margin-top:14px}
+section:target{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+h1,h2,h3{line-height:1.25}
+h1{margin:0}
+h2{margin-top:34px;padding-bottom:8px;border-bottom:1px solid var(--line);font-size:24px}
+h3{margin-top:24px;font-size:18px}
+h4{margin-top:18px;font-size:16px;font-weight:650}
+section h2:first-child{margin-top:0}
+.summary>h2:first-child{margin-top:0;padding-bottom:0;border-bottom:0;font-size:20px}
+p{margin:12px 0}
+ul,ol{padding-left:22px}
+li{margin:6px 0}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+blockquote{margin:16px 0;padding:10px 16px;border-left:3px solid var(--line);border-radius:0 6px 6px 0;background:#fbfcfe;color:#37485c}
+blockquote p{margin:6px 0}
+figure{margin:20px 0}
+figure img,figure svg{display:block;margin:0 auto;border:1px solid var(--line);border-radius:8px;background:#fff}
+figcaption{margin-top:10px;color:var(--muted);font-size:.9rem;text-align:center}
+code{padding:2px 5px;border-radius:4px;background:var(--code-bg);font-family:var(--mono);font-size:.92em}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:14px 16px;overflow-x:auto;font-size:.9rem;line-height:1.55;white-space:pre;font-family:var(--mono)}
+pre code{padding:0;background:none;border-radius:0;font-size:inherit}
+pre[data-file]{position:relative;padding-top:36px}
+pre[data-file]::before{content:attr(data-file);position:absolute;top:0;left:0;right:0;padding:6px 16px;border-bottom:1px solid var(--line);border-radius:6px 6px 0 0;background:#e4e9f0;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.diff-add,.diff-del{display:block;margin:0 -4px;padding:0 4px;border-left:3px solid transparent}
+.diff-add{background:var(--ok-bg);border-left-color:var(--ok)}
+.diff-del{background:var(--risk-bg);border-left-color:var(--risk)}
+kbd{display:inline-block;padding:1px 6px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;background:#fff;font-family:var(--mono);font-size:.85em;line-height:1.4;white-space:nowrap}
+.tbl-wrap{margin:16px 0;overflow-x:auto}
+.tbl-wrap table{margin:0}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-variant-numeric:tabular-nums}
+caption{caption-side:top;padding-bottom:8px;color:var(--muted);font-size:.9rem;font-weight:600;text-align:left}
+th,td{padding:10px 12px;border:1px solid var(--line);vertical-align:top;text-align:left}
+thead th{position:sticky;top:0;z-index:1;background:#eef4fb;color:#1d334d;font-weight:750}
+td code{overflow-wrap:anywhere}
+tr.highlight{background:#fef3c7}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+table.dense{font-size:.88rem}
+table.dense th,table.dense td{padding:7px 9px}
+table.zebra tbody tr:nth-child(even){background:#f7fafd}
+table.fixed{table-layout:fixed}
+.toc h2{margin-top:0;padding-bottom:0;border-bottom:0;font-size:20px}
+.toc ol{columns:2;margin:12px 0 0;padding-left:24px}
+.kv{margin:16px 0;border-top:1px solid var(--line)}
+.kv>div{display:grid;grid-template-columns:200px minmax(0,1fr);gap:2px 16px;padding:8px 2px;border-bottom:1px solid var(--line)}
+.kv dt{color:var(--muted);font-size:.92rem;font-weight:600;word-break:break-word}
+.kv dd{min-width:0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0}
+.stat{padding:14px 16px;border:1px solid var(--line);border-radius:8px;background:#fbfcfe}
+.stat b{display:block;color:var(--accent-ink);font-size:26px;line-height:1.2;font-variant-numeric:tabular-nums}
+.stat span{display:block;margin-top:4px;color:var(--muted);font-size:.86rem}
+.stat.ok b{color:var(--ok)}
+.stat.warn b{color:var(--warn)}
+.stat.risk b{color:var(--risk)}
+.badge{display:inline-flex;align-items:center;min-height:24px;padding:2px 8px;border-radius:999px;font-size:13px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ok{background:var(--ok-bg);color:var(--ok)}
+.warn{background:var(--warn-bg);color:var(--warn)}
+.risk{background:var(--risk-bg);color:var(--risk)}
+.info{background:var(--soft);color:var(--accent-ink)}
+.callout{margin:16px 0;padding:14px 16px;border-left:4px solid var(--accent);border-radius:6px;background:var(--soft)}
+.callout.warn{border-left-color:var(--warn);background:var(--warn-bg)}
+.callout.risk{border-left-color:var(--risk);background:var(--risk-bg)}
+.callout.ok{border-left-color:var(--ok);background:var(--ok-bg)}
+details{margin:16px 0;padding:12px 16px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+summary{cursor:pointer;color:var(--accent-ink);font-weight:650}
+summary::marker{color:var(--muted)}
+details[open] summary{margin-bottom:8px}
+details>:last-child{margin-bottom:0}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}
+.grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{border:1px solid var(--line);border-radius:8px;padding:14px;background:#fbfcfe}
+.card strong{display:block;margin-bottom:6px}
+.flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:16px 0}
+.step{min-height:112px;padding:12px;border:1px solid var(--line);border-radius:8px;background:#fbfcfe}
+.step b{display:block;margin-bottom:6px;color:var(--accent-ink)}
+.timeline{position:relative;padding:1rem 1rem .25rem 2.5rem}
+.timeline::before{content:'';position:absolute;left:.25rem;top:0;bottom:0;width:2px;background:var(--line)}
+.timeline-item{position:relative;margin-bottom:1.5rem}
+.timeline-item::before{content:'';position:absolute;left:-1.15rem;top:.5rem;width:.7rem;height:.7rem;border-radius:50%;background:var(--accent)}
+.highlight,mark{background:#fef08a;padding:0 .15rem;border-radius:2px}
+.note{color:var(--muted);font-size:.9rem}
+hr{margin:1.75rem 0;border:none;border-top:1px solid var(--line)}
+@media (max-width:900px){header{padding:24px 16px 20px}main{padding:16px 12px 32px}.grid,.grid.cols-2,.grid.cols-4,.flow,.flow-row{grid-template-columns:1fr}.toc ol{columns:1}.kv>div{grid-template-columns:1fr}table{display:block;overflow-x:auto}}
+@media print{body{background:#fff;font-size:11.5pt}header{padding:0 0 14pt;background:none;color:#000;border-bottom:2pt solid #000}header .lede{color:#333}.meta span{border-color:#aaa;background:none;color:#333}main{max-width:none;padding:0}.summary,.toc,section{box-shadow:none;border-color:#bbb}section{margin-top:14pt}h2,h3,h4{break-after:avoid}.callout,.card,.stat,.step,pre,blockquote,figure,tr,details,.kv>div{break-inside:avoid}thead{display:table-header-group}table{display:table}pre{white-space:pre-wrap;word-break:break-word}.tbl-wrap{overflow-x:visible}.toc ol{columns:2}a{color:#000}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>同步审计：dsh 0.1.1-rc.1 → 0.1.1-rc.2</h1>
+  <p class="lede">首次按 fork-upstream-sync SKILL 执行的同步窗口：35 个上游 commit 合入、4 处冲突全部落在预测热点、门禁与 staging 全绿、rc.2 已部署上线。同窗口完成终端/文件预览根因修复与信任栅栏收口。</p>
+  <div class="meta">
+    <span>日期：2026-08-24</span>
+    <span>窗口：sync/upstream-dsh-v0.1.1-rc.2</span>
+    <span>状态：<span class="badge ok">部署完成 · 冒烟全绿</span></span>
+    <span>机制：fork-upstream-sync SKILL 首次执行</span>
+  </div>
+</header>
+
+<main>
+
+<section class="summary" id="summary">
+  <h2>摘要</h2>
+  <div class="stats">
+    <div class="stat"><b>35</b><span>上游 commit（rc.1→rc.2）</span></div>
+    <div class="stat"><b>431</b><span>上游变更文件</span></div>
+    <div class="stat"><b>4</b><span>冲突文件（全部落在预测热点）</span></div>
+    <div class="stat ok"><b>7/7</b><span>线上冒烟层通过</span></div>
+    <div class="stat ok"><b>530</b><span>命中面兜底测试通过</span></div>
+  </div>
+  <p>本窗口是「fork 稳定更新机制」<a href="./2026-08-22-fork-maintenance-mechanism.md">落盘文档</a>实施后的首次完整执行：合并前先落地了机制本身（冒烟脚本、SURFACES 计算式认领、peer 机器判定、staging 冒烟、deploy 收编、SKILL 与 CLAUDE.local.md 规则），随后用该机制完成 rc.2 同步。<strong>冲突预测命中</strong>：sync-scope 预告的 <code>packages/client/connection</code> 热点正是唯一的内容冲突处。</p>
+</section>
+
+<nav class="toc" id="toc">
+  <h2>目录</h2>
+  <ol>
+    <li><a href="#incident">前置事故：终端与文件预览失效（根因）</a></li>
+    <li><a href="#scope">变更规模与认领面命中</a></li>
+    <li><a href="#conflicts">冲突决议</a></li>
+    <li><a href="#gates">门禁结果</a></li>
+    <li><a href="#plugin">插件窗口（peer 判定 + staging）</a></li>
+    <li><a href="#deploy">部署与线上验证</a></li>
+    <li><a href="#followups">遗留项</a></li>
+  </ol>
+</nav>
+
+<section id="incident">
+  <h2>1. 前置事故：终端与文件预览失效（根因）</h2>
+  <p>用户报告侧边栏终端与文件预览不可用。逐层探测（服务端 RPC 全绿 → 无头浏览器 → 用户控制台报错）定位到完整因果链：</p>
+  <ol>
+    <li>dsh-better-sidebar 0.12.3 的惰性 chunk（terminal/editor）通过 <code>globalThis.__DSH_MODULES__</code> 获取客户端模块系统；</li>
+    <li>上游在 0.1.0-rc.7 → 0.1.1-rc.1 之间移除了该全局量（模块系统只能经 <code>ctx.loader.internal</code> 访问）；</li>
+    <li><code>loadChunk()</code> 抛出 <code>[dsh-better-sidebar] chunk "terminal": client module system unavailable</code> —— 与用户控制台报错逐字吻合；服务端 RPC 不受影响，所以文件树/git 仍可用，死的恰是两个按需分块。</li>
+  </ol>
+  <div class="callout ok">
+    <p><strong>✅ 修复：</strong>npm 全部版本 peer 均锚定 <code>^0.1.0-rc.x</code>（semver 机器判定无一形式满足 0.1.1-rc.1），但 0.15.2 已改为自带注入（<code>injectedModuleSystem ?? g.__dshSidebarModuleSystem__ ?? g.__DSH_MODULES__</code> 三级 fallback）。staging 冒烟证实运行时兼容，已随本窗口升级部署。</p>
+  </div>
+  <div class="callout warn">
+    <p><strong>⚠️ 教训（已写入 CLAUDE.local.md 规则 7）：</strong>08-22 审计文档人眼判定「fork 的 0.1.1-rc.1 满足 <code>^0.1.0-rc.8</code>」是错的——npm 预发布 semver 下跨 patch 元组的 <code>^rc</code> 范围不容纳 rc.1/rc.2。peer 判定必须走 <code>scripts/fork/peer-check.mjs</code>。</p>
+  </div>
+</section>
+
+<section id="scope">
+  <h2>2. 变更规模与认领面命中</h2>
+  <dl class="kv">
+    <div><dt>上游范围</dt><dd><code>dsh-v0.1.1-rc.1..dsh-v0.1.1-rc.2</code>，35 commit / 431 文件（+8101/−2039）</dd></div>
+    <div><dt>认领面命中</dt><dd>112 个上游变更文件落在 fork SURFACES 认领范围（<code>sync-scope.mjs diff</code> 输出）</dd></div>
+    <div><dt>认领面消失告警</dt><dd>无（fork 认领的全部 glob 在 rc.2 均仍有匹配文件）</dd></div>
+    <div><dt>上游主题</dt><dd>deepseek 文件/流超时解耦、WebP alpha 兼容、图像存储 API 规范化、permission snapshot 回退、release 0.1.1-rc.2</dd></div>
+    <div><dt>SESSION_FORMAT_VERSION</dt><dd>无变化（部署前归档要求未触发）</dd></div>
+  </dl>
+</section>
+
+<section id="conflicts">
+  <h2>3. 冲突决议</h2>
+  <div class="tbl-wrap">
+    <table class="dense">
+      <caption>表 1：冲突文件与决议（rerere 已记录，下次同类冲突自动复用）</caption>
+      <thead><tr><th>文件</th><th>冲突性质</th><th>决议</th></tr></thead>
+      <tbody>
+        <tr><td><code>packages/client/connection/src/index.ts</code></td><td>fork 的 <code>trustedNetworks</code> 配置文档 vs 上游给 <code>maxRequestBodyBytes</code> 补默认值注释</td><td>两者并存：保留 fork 字段文档块 + 采纳上游默认值注释</td></tr>
+        <tr><td><code>docs/config-catalog.md / .zh.md</code></td><td>同上（生成文件内嵌同一接口文档）</td><td>同构决议</td></tr>
+        <tr><td><code>docs/config-catalog.i18n.yaml</code></td><td>自动合并（rerere 记录 preimage）</td><td>无需手工干预</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">冲突面完全落在预测热点（trustedNetworks 是 fork 独有、上游持续在改连接层），验证了「认领表 + 兜底测试」审查法的价值：每个冲突文件都能立即对到 feature 与其测试。</p>
+</section>
+
+<section id="gates">
+  <h2>4. 门禁结果</h2>
+  <div class="tbl-wrap">
+    <table class="dense">
+      <caption>表 2：同步窗口门禁（SKILL 第 3 步）</caption>
+      <thead><tr><th>门禁</th><th>结果</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td><code>pnpm install</code>（合并后 lockfile）</td><td><span class="badge ok">通过</span></td><td></td></tr>
+        <tr><td><code>pnpm run typecheck</code></td><td><span class="badge ok">通过</span></td><td></td></tr>
+        <tr><td><code>pnpm run build</code></td><td><span class="badge ok">通过</span></td><td>200 个 client 产物；含合并前修复的 client-face 断裂（见遗留项）</td></tr>
+        <tr><td>命中面 vitest（web-app / connection / base / apiproxy）</td><td><span class="badge ok">530/530</span></td><td>36 个测试文件</td></tr>
+        <tr><td><code>sync-scope.mjs check</code></td><td><span class="badge ok">通过</span></td><td>83 个 M/D 全认领；受保护路径零 diff</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="plugin">
+  <h2>5. 插件窗口（peer 判定 + staging）</h2>
+  <dl class="kv">
+    <div><dt>插件</dt><dd>dsh-better-sidebar：pin 0.15.2（npm 最新亦为 0.15.2，无新版本）</dd></div>
+    <div><dt>peer 机器判定</dt><dd>0.15.2 的 14 个 <code>@deepseek-ai/dsh-*</code> peer（<code>^0.1.0-rc.8</code>）对 0.1.1-rc.2 <strong>形式上全部不满足</strong>（预发布元组规则）</dd></div>
+    <div><dt>staging 冒烟</dt><dd><span class="badge ok">绿</span> rc.2 构建上 7 层冒烟 + 浏览器探针全过（含栅栏负向、WS+PTY echo、版本一致）</dd></div>
+    <div><dt>结论</dt><dd>保持 0.15.2 pin 不变；运行时兼容已由 staging 证实，peer 形式不满足记录在案</dd></div>
+    <div><dt>dsh-token-cost</dt><dd>0.2.1 vendored（<code>file:vendor/dsh-token-cost</code>），不参与 npm 漂移</dd></div>
+  </dl>
+</section>
+
+<section id="deploy">
+  <h2>6. 部署与线上验证</h2>
+  <p><code>deploy/install.sh</code>：隔离 store 冷装 → 原子切换 profile → systemd 重启 → 冒烟尾门禁。结果：</p>
+  <ul class="source-list">
+    <li>线上版本：0.1.1-rc.2（L7 注入版本 == 仓库版本）</li>
+    <li>冒烟 7 层全绿，含 L6b/L6c 负向（eth0 → /sidebar 403、WS 拒绝）——本窗口同批上线的 <code>resolveLanTrust</code> 网段过滤生效</li>
+    <li>浏览器侧：<code>__DSH_WEB_TRUST__.trustedHosts</code> 仅剩 <code>10.147.20.97</code>；插件 chunk 机制全局量存在；零 console 错误</li>
+    <li>启动打印：<code>LAN: http://10.147.20.97:3080</code>（此前会误导性地列出 eth0 与 docker 网桥）</li>
+  </ul>
+</section>
+
+<section id="followups">
+  <h2>7. 遗留项</h2>
+  <div class="tbl-wrap">
+    <table class="dense">
+      <caption>表 3：后续动作</caption>
+      <thead><tr><th>项</th><th>状态</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>apiproxy RPC id 修复上游化</td><td><span class="badge info">候选</span></td><td>自包含、带测试（fork commit 16fa8f2f6d），第一个 upstream PR 的最佳形状</td></tr>
+        <tr><td>trustedNetworks 栅栏上游化</td><td><span class="badge info">候选</span></td><td>issue 先行探设计共识（上游尚无任何 trustedNetworks 等价物）</td></tr>
+        <tr><td>llm-router 分支处置</td><td><span class="badge warn">未决</span></td><td>feat/dsh-llm-router 仍未合入或归档，继续升值中；限一周二选一</td></tr>
+        <tr><td>fence-as-service</td><td><span class="badge info">触发条件未到</span></td><td>出现第二个自带路由的插件时启动；当前过滤修法 + SURFACES 约束兜底</td></tr>
+        <tr><td>每日 drift 信号（GitHub Actions）</td><td><span class="badge info">可选</span></td><td>当前以 SKILL 第 1 步人工/会话触发为准；持续同步频率高时可加 fork-drift workflow</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">🤖 Generated with Claude Code</p>
+</section>
+
+</main>
+</body>
+</html>

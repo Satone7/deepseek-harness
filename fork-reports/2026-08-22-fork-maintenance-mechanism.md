@@ -1,10 +1,10 @@
 # Fork 稳定更新机制设计 —— 观点落盘
 
-> 日期：2026-08-22
+> 日期：2026-08-22（2026-08-24 增补实施记录，见 §8）
 > 作者：主 agent 分析（含与 glm-5.3 两轮讨论收敛，分歧记录见 §5）
 > 适用范围：Satone7/deepseek-harness fork（唯一维护者）
 > 目标：在持续跟踪 upstream 更新的前提下，保证 fork 自有 feat 与第三方插件始终正常工作
-> 状态：观点与方案落盘；实施需用户批准
+> 状态：**已实施（2026-08-24）**——SKILL/脚本/规则/部署收编全部落地，并完成首次同步窗口（rc.1→rc.2）；入口见 fork-reports/INDEX.md「机制入口」
 
 ---
 
@@ -16,7 +16,7 @@
 | F2 | 线上服务（0.0.0.0:3080，systemd user 服务 dsh-web）**一直在运行**，版本 0.1.1-rc.1；终端插件服务端全链路健康（client 注入 / chunk 200 / node-pty ok / WS+PTY echo 通过） | 端口探测 + 分层探测链实测 |
 | F3 | 信任边界不一致（实时复现）：`trustedNetworks=["10.147.20.0/24"]`；从 eth0（172.29.15.156）源访问 `/api/session.list` → **403**，而 `/sidebar/api/terminal.deps` → **200**（插件路由只做 Host 头校验，不过来源栅栏，PTY 同样可达）；从可信源 10.147.20.97 访问 /api 通过 | curl `--interface` 绑定源地址实测 |
 | F4 | 依赖不可复现：`@deepseek-ai/dsh-token-cost` 0.2.1（`private: true`，未发布 npm）依赖 `file:/home/pren/projects/deepseek-harness/review-dsh-token-cost/*.tgz`，**该路径已不存在**；现有 node_modules 是 2026-08-18 安装的暂态，全新 `pnpm install` 必失败 | `ls` 目录不存在 + profile package.json 实读 |
-| F5 | 第三方插件滞后：dsh-better-sidebar 已装 0.12.3（2026-08-16 发布），npm 最新 0.15.2（2026-08-22 发布）；该插件日更 1–3 版；0.15.2 peerDeps 要求 `@deepseek-ai/dsh-*@^0.1.0-rc.8`（fork 的 0.1.1-rc.1 满足，但需机器判定而非人眼） | npm registry 查询 + 本地 package.json |
+| F5 | 第三方插件滞后：dsh-better-sidebar 已装 0.12.3（2026-08-16 发布），npm 最新 0.15.2（2026-08-22 发布）；该插件日更 1–3 版；0.15.2 peerDeps 要求 `@deepseek-ai/dsh-*@^0.1.0-rc.8`（~~fork 的 0.1.1-rc.1 满足~~ **订正（2026-08-24）**：semver 机器判定**不满足**——npm 预发布语义下跨 patch 元组的 `^rc` 范围不容纳 0.1.1-rc.x；本条人眼判定错误正是「绝不人眼判」原则的第一个反例） | npm registry 查询 + 本地 package.json + semver.satisfies 实测 |
 | F6 | 未合并分支 `feat/dsh-llm-router`（2 commits，基于旧 base）持续漂移；经核查上游 `packages/llm` **无 router 等价物**，该 feat 是独有价值 | git log + upstream 全量提交核查 |
 | F7 | 沙箱/容器陷阱：`ps` 在隔离 PID namespace 下看不到宿主机进程（曾因此误判"服务没在跑"）；**服务存活检查必须用端口/HTTP 探测** | bwrap `--unshare-pid` 实测 |
 | F8 | 现有同步机制：`fork-reports/` 手工审计 HTML（仅 2026-08-21 一条），纯手工触发，无漂移告警、无自动化验证 | fork-reports/INDEX.md |
@@ -186,3 +186,29 @@ deploy/
 3. **插件不静默坏**：每日对比表显示每个插件"当前版本 / 最新 / peer 兼容性"；升级永远走 staging 冒烟；线上服务由健康 timer 守护，挂了自动重启并告警。
 
 这套机制把三个跟踪目标各接上一个不会遗忘的信号源：上游靠 drift issue + 准备好的同步 PR，fork feat 靠 SURFACES 清单 + 边界测试，第三方插件靠 pin + peer 机器判定 + staging 冒烟；部署本身靠 deploy/ 冷装 + 每日健康 timer 兜底。维护者的注意力只花在机器判定不了的地方：冲突的语义取舍和命中面的审查。
+
+---
+
+## 8. 实施记录（2026-08-24 增补）
+
+同一天（2026-08-24）在用户批准的落地顺序下全部实施，并完成首次同步窗口。落地物与文档原案的差异：
+
+**已落地（与原案一致）**
+
+- 支柱 D 冒烟：`scripts/fork/smoke.sh`（8 层→实现为 L1–L7 共 11 个断言，分层报错）；`scripts/fork/browser-probe.mjs` 无头浏览器探针（原案未单列，staging 与故障定位共用）。
+- 支柱 E 部署收编：`deploy/profiles/web/`（manifest + lockfile + vendored dsh-token-cost）+ `deploy/systemd/` + `install.sh`（冷装→原子切换→重启→冒烟→回滚）。**实现中新发现两颗雷**：pnpm 10 默认拦截 node-pty 构建脚本（放行写入 workspace yaml）；`/tmp` noexec 挂载使原生模块加载必败（staging 移入 `~/.dsh`）。
+- 支柱 B：`resolveLanTrust` 网段过滤（收口 F3）+ 负向测试三件套；SURFACES 清单落地为 `fork-reports/SURFACES.md`。
+- 支柱 C：`scripts/fork/peer-check.mjs`（semver 机器判定）+ `scripts/fork/plugin-stage.sh`（staging 冒烟，含「profile 必须是 DSH_HOME 下真实目录」的实测教训）。
+- 同步 SKILL：`.agents/skills/fork-upstream-sync/SKILL.md`（漂移→merge→交集审查→门禁→staging→部署→HTML 审计）。
+- 开发规则：`CLAUDE.local.md`（上游 gitignore 忽略、force-add、每次会话自动加载）。
+
+**与原案的差异（均经用户确认）**
+
+- SURFACES 为**计算式**（`sync-scope.mjs` 从 merge-base diff 生成，认领表强制覆盖每个 M/D，`check` 为门禁）而非手维护清单——glm-5.3 复审意见被采纳。
+- CI workflows（fork-drift / fork-sync-prep）**未建**：本轮用户选择会话驱动（读 SKILL 执行）；Actions 自动化为可选项留在 INDEX 遗留清单。
+- 插件不兼容兜底：用户选择**保持 0.1.1-rc.x 等生态跟进**（不回退、不打本地补丁）；实测 0.15.2 运行时兼容，无需兜底。
+- 本轮直接完成 rc.2 完整同步并部署（原案「dry-run 验证」升级为真实验收）。
+
+**首次同步窗口（rc.1→rc.2）验证了机制**：冲突 4 处全部落在 sync-scope 预测热点（`client/connection`）；门禁全绿（typecheck/build/530 测试/check）；staging 绿；部署冒烟 7 层全绿；rerere 已记录决议。审计见 [2026-08-24 报告](2026-08-24-upstream-0.1.1-rc.1-to-0.1.1-rc.2.html)。
+
+**同窗口附带修复**（终端/预览失效的完整因果链见审计报告 §1）：插件升级 0.12.3→0.15.2；fork 自引入的 client-face 构建断裂（smoke-real.e2e.ts import scaffold 未进 tsconfig exclude）。

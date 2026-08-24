@@ -17,10 +17,18 @@ YYYY-MM-DD-upstream-<from>-to-<to>.html
 
 | 日期 | 同步范围 | 报告 |
 |---|---|---|
+| 2026-08-24 | 0.1.1-rc.1 → 0.1.1-rc.2(35 commits;含终端/预览根因修复、栅栏收口、插件 0.15.2;首次按 fork-upstream-sync SKILL 执行) | [2026-08-24-upstream-0.1.1-rc.1-to-0.1.1-rc.2.html](2026-08-24-upstream-0.1.1-rc.1-to-0.1.1-rc.2.html) |
 | 2026-08-21 | 0.1.0-rc.7 → 0.1.1-rc.1(99f6f02fec → 528c682e06,448 commits) | [2026-08-21-upstream-rc.7-to-0.1.1-rc.1.html](2026-08-21-upstream-rc.7-to-0.1.1-rc.1.html) |
 
 ## 维护机制文档
 
 | 日期 | 文档 |
 |---|---|
-| 2026-08-22 | [fork 稳定更新机制设计（观点落盘）](2026-08-22-fork-maintenance-mechanism.md) —— 五大支柱机制 + 落地顺序 + 三个"不再发生"判定标准 |
+| 2026-08-22 | [fork 稳定更新机制设计（观点落盘）](2026-08-22-fork-maintenance-mechanism.md) —— 五大支柱机制 + 落地顺序 + 三个"不再发生"判定标准;**2026-08-24 已实施**(同窗口落地,订正 F5 peer 误判,见文末实施记录) |
+| 2026-08-24 | [SURFACES.md](SURFACES.md) —— fork delta 机器事实源(`scripts/fork/sync-scope.mjs` 生成,认领表强制覆盖每个 M/D) |
+
+## 机制入口
+
+- 同步/兼容排查流程:[`.agents/skills/fork-upstream-sync/SKILL.md`](../.agents/skills/fork-upstream-sync/SKILL.md)(上游同步一律走此 SKILL)
+- fork 开发规则:[`CLAUDE.local.md`](../CLAUDE.local.md)(每次会话自动加载)
+- 部署:`bash deploy/install.sh`(冷装+冒烟门禁+失败回滚)
