@@ -18,3 +18,9 @@ YYYY-MM-DD-upstream-<from>-to-<to>.html
 | 日期 | 同步范围 | 报告 |
 |---|---|---|
 | 2026-08-21 | 0.1.0-rc.7 → 0.1.1-rc.1(99f6f02fec → 528c682e06,448 commits) | [2026-08-21-upstream-rc.7-to-0.1.1-rc.1.html](2026-08-21-upstream-rc.7-to-0.1.1-rc.1.html) |
+
+## 维护机制文档
+
+| 日期 | 文档 |
+|---|---|
+| 2026-08-22 | [fork 稳定更新机制设计（观点落盘）](2026-08-22-fork-maintenance-mechanism.md) —— 五大支柱机制 + 落地顺序 + 三个"不再发生"判定标准 |

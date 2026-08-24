@@ -70,7 +70,7 @@ export interface ConnectionConfig {
    * entry that is not a canonical CIDR (host bits zero) fails the plugin load.
    */
   trustedNetworks?: string[]
-  /** Maximum buffered JSON body for every `/api` request. */
+  /** Maximum buffered JSON body for every `/api` request. Default: 300 MiB. */
   maxRequestBodyBytes?: number
 }
 
