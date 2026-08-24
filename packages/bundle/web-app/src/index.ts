@@ -19,7 +19,12 @@ import { fileURLToPath } from 'node:url'
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { addHarnessSourceSection } from '@deepseek-ai/dsh-app-boot'
-import { WEB_TRUST_GLOBAL, WEB_VERSION_GLOBAL } from '@deepseek-ai/dsh-client-connection'
+import {
+  isTrustedSource,
+  parseTrustedNetwork,
+  WEB_TRUST_GLOBAL,
+  WEB_VERSION_GLOBAL,
+} from '@deepseek-ai/dsh-client-connection'
 import * as FrontendStatic from '@deepseek-ai/dsh-host-frontend-static'
 import { launchEnvironmentOf } from '@deepseek-ai/dsh-launch-environment'
 import { scrubbedParentEnv } from '@deepseek-ai/dsh-subprocess'
@@ -133,7 +138,13 @@ try {
  * attacker-controlled name, while an IP-literal Host is safe on any port and
  * an OS-assigned port is unknowable before bind.
  * Trusted networks ride through verbatim — deriving a machine interface's
- * containing subnet would guess the operator's network plan.
+ * containing subnet would guess the operator's network plan — and, when any
+ * are declared, they also constrain the derived LAN addresses to member
+ * interfaces: every consumer of `trustedHosts` (the `/api` header fence, the
+ * browser trust injection, and any plugin that Host-checks its own routes)
+ * then refuses non-member interface authorities on an all-interfaces bind.
+ * With no networks declared the derived set keeps every interface, matching
+ * the loopback deployment's vacuous network gate.
  * @param bindHost - the active webserver bind host.
  * @param extra - explicit `--trusted-host` values, in argument order.
  * @param networks - explicit `--trusted-network` CIDRs, in argument order.
@@ -144,10 +155,12 @@ export function resolveLanTrust(
   extra: readonly string[],
   networks: readonly string[],
 ): WebRuntimeValues {
+  const parsedNetworks = networks.map(parseTrustedNetwork)
   const lanAddresses = bindHost === ALL_INTERFACES_HOST
     ? Object.values(networkInterfaces()).flat()
       .filter((iface): iface is NonNullable<typeof iface> => iface !== undefined && iface.family === 'IPv4' && !iface.internal)
       .map(iface => iface.address)
+      .filter(address => parsedNetworks.length === 0 || isTrustedSource(address, parsedNetworks))
     : []
   return { lanAddresses, trustedHosts: [...lanAddresses, ...extra], trustedNetworks: [...networks] }
 }

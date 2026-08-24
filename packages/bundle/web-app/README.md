@@ -26,7 +26,7 @@ The prompt section sits near the system prompt's head and is stable for the life
 ## Known Limitations and Deferred Work
 
 - **The frontend dist must be built** — `require.resolve` of the dist fails loud at activation with a build hint; there is no source-serving fallback.
-- **`lanAddresses` is a boot-time snapshot** — interface changes after boot are not re-advertised; the printed LAN URL always matches the configured trust fence.
+- **`lanAddresses` is a boot-time snapshot** — interface changes after boot are not re-advertised; the printed LAN URL always matches the configured trust fence. When any `--trusted-network` is declared, only member interfaces enter the snapshot: a non-member interface address is reachable on the wire but is never a fence authority, so consumers of `webRuntime.trustedHosts` (the `/api` header fence, the browser trust injection, and plugin routes that Host-check against it) refuse it.
 - **Only handoff startup is observable** — observation ends when the platform opener accepts spawn, except that Windows waits for its short-lived PowerShell launcher to exit; a later browser exit is not reported, and the printed URL remains the manual fallback.
 - **SSH forwarding owns the browser URL** — the printed canonical URL names the remote host's loopback endpoint; automatic handoff is suppressed, and the SSH client or editor must expose and open its local forwarded address.
 - **Browser command overrides are launch-only** — a discovered `.env` may not set `BROWSER`; only an inherited value may reach an opener path that honors the variable, so a checkout cannot choose an executable for automatic handoff.

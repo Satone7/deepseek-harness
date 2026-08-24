@@ -23,6 +23,7 @@ export type {
 export { HostConnectionService } from './rpc-host.ts'
 
 export { API_PATH, HOST_EVENTS_PATH, MUX_EVENTS_PATH } from './api-path.ts'
+export { isTrustedSource, parseTrustedNetwork } from './trusted-network.ts'
 export { WEB_TRUST_GLOBAL, type WebTrust } from './web-trust.ts'
 export { WEB_VERSION_GLOBAL } from './web-version.ts'
 
