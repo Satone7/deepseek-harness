@@ -1,0 +1,8 @@
+packages:
+  - .
+
+nodeLinker: hoisted
+autoInstallPeers: false
+# node-pty 是原生模块，pnpm 10 默认拦截其构建脚本会导致全新安装后终端不可用。
+onlyBuiltDependencies:
+  - node-pty

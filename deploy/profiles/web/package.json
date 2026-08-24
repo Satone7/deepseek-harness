@@ -1,0 +1,18 @@
+{
+  "name": "dsh-profile-web",
+  "private": true,
+  "dependencies": {
+    "@deepseek-ai/dsh-token-cost": "file:vendor/dsh-token-cost",
+    "dsh-better-sidebar": "0.15.2"
+  },
+  "dsh": {
+    "profile": {
+      "bundles": [
+        "@deepseek-ai/dsh-base",
+        "@deepseek-ai/dsh-web-app",
+        "dsh-better-sidebar",
+        "@deepseek-ai/dsh-token-cost"
+      ]
+    }
+  }
+}

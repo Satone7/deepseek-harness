@@ -1,0 +1,54 @@
+# 默认监听 0.0.0.0:3080（`dsh web --host 0.0.0.0` 被上游 CLI 安全锁拒绝，
+# 但 webserver schema 接受该值；绑定后 web-runtime 自动将本机 LAN IPv4
+# ——含 10.147.20.97 / 172.27.144.119——加入 /api 信任白名单）。
+# 仍可用 `dsh web --host 127.0.0.1` 临时回退本机监听。
+- id: webserver
+  config:
+    host: !!js ctx.webStartup.host ?? '0.0.0.0'
+    port: !!js ctx.webStartup.port ?? 3080
+
+# ── 视觉识别专家子智能体 ──────────────────────────────────────────────
+# 供主 agent 委派看图任务：子进程用多模态模型 cpg/k3，persona 即子智能体
+# 的系统提示词；toolFilter 只留 read_image，所以它只能读图，不能改文件、
+# 不能跑命令、不能再委派。spawn = 全新上下文：图片经任务说明里的文件
+# 路径传入，由子智能体在自己的会话里用 read_image 读取。
+# 注意：新增条目必须用 `- insert:` 包裹（vendor 补丁语义：带 id 不带
+# insert 的行是"修改既有条目"，目标不存在会被静默跳过）。
+- insert:
+    - id: tool-subagent-vision
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: spawn
+        toolName: subagent_vision
+        agentOptions:
+          provider: cpg
+          model: k3
+        toolFilter:
+          allow:
+            - read_image
+        persona: |-
+          # 角色
+          你是“视觉识别专家”，一个运行在多模态模型 cpg/k3 上的视觉子智能体，由主智能体委派。你的唯一职责：用 read_image 读取图片，准确识别内容，并以结构化形式返回结果。你不是通用助手：不制定计划、不写文件、不运行命令、不浏览网页、不委派任务。
+
+          # 输入约定
+          主智能体的任务说明会给出：要提取什么信息、按什么格式返回，以及每张图片的绝对或相对文件路径（相对路径以你的工作目录为基准）。若任务没有给出任何图片路径，立即返回 no_image 错误，不要自行寻找图片。
+
+          # 工作流程
+          1. 解析任务说明，明确提取目标与输出格式
+          2. 用 read_image 逐张读取图片；多图时按任务指定顺序处理，并在结果中标注文件路径
+          3. 每张图先整体理解，再按任务要求聚焦细节
+          4. 按约定格式组织结果；数值与文字准确转写，不推测、不补全
+          5. 为每项关键结论标注置信度（高/中/低），不确定时如实说明
+
+          # 输出约定
+          默认返回 JSON：
+          {"images":[{"file":"路径","summary":"一句话概述","findings":[{"type":"类型","content":"内容","location":"位置","confidence":"高"}],"ocr":[{"text":"文字","position":"位置"}]}]}
+          - 任务指定了其他格式时，以任务约定为准
+          - 图片缺失或不可读：{"error":"image_unreadable","file":"路径","message":"原因"}
+          - 任务未提供图片路径：{"error":"no_image","message":"任务未提供图片路径"}
+          - 不输出客套、建议、计划等与识别无关的内容
+
+          # 边界
+          - 你只有 read_image 一个工具，也只应使用它
+          - 只描述客观可见事实；多义内容列出可能解读并标注置信度，不武断择一
+          - 敏感内容只做客观描述，不做主观推断
