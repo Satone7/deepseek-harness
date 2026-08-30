@@ -19,9 +19,12 @@ function arg(name, fallback) {
 }
 const url = arg('url')
 if (!url) {
-  console.error('用法: node scripts/fork/browser-probe.mjs --url http://127.0.0.1:3080 [--out DIR] [--wait-ms N] [--strict]')
+  console.error('用法: node scripts/fork/browser-probe.mjs --url http://127.0.0.1:3080 [--token-url URL] [--out DIR] [--wait-ms N] [--strict]')
   process.exit(2)
 }
+// 上游 0.1.2-alpha.1 起页面走一次性 token → 会话 cookie 鉴权；--token-url
+// 先完成交换（浏览器跟随 303 落 cookie），再 goto 目标 --url。
+const tokenUrl = arg('token-url')
 const outDir = arg('out', '/tmp/dsh-browser-probe')
 const waitMs = Number(arg('wait-ms', '8000'))
 const strict = process.argv.includes('--strict')
@@ -51,7 +54,9 @@ try {
   })
 
   // 不用 networkidle：页面持有常驻连接（HMR SSE），networkidle 永不触发。
-  await page.goto(url, { waitUntil: 'load', timeout: 30_000 })
+  // token 模式只 goto 一次：303 重定向落在干净根 URL 上，应用随该次加载
+  // 完成；紧跟的第二次 goto 只会把首屏已发出的 API 请求中断成 ERR_ABORTED。
+  await page.goto(tokenUrl ?? url, { waitUntil: 'load', timeout: 30_000 })
   await page.waitForTimeout(waitMs)
 
   const boot = await page.evaluate(() => {
@@ -59,7 +64,6 @@ try {
     return {
       hasBoot: typeof window.__DSH_BOOT__ === 'object',
       bootKeys: typeof window.__DSH_BOOT__ === 'object' ? Object.keys(window.__DSH_BOOT__).length : 0,
-      trust: window.__DSH_WEB_TRUST__ ?? null,
       version: window.__DSH_WEB_VERSION__ ?? null,
       pluginScripts,
       sidebarNodes: document.querySelectorAll('[id*="sidebar" i], [class*="sidebar" i]').length,

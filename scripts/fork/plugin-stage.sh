@@ -53,13 +53,18 @@ done
 [ -n "${PORT:-}" ] || { echo "!! 实例未就绪："; cat "$STAGE_ROOT/server.log"; exit 1; }
 echo "    http://127.0.0.1:$PORT"
 
+# 上游 0.1.2-alpha.1 起，页面/会话走一次性 token → cookie；从启动日志提取
+# token URL 供 smoke 与 browser-probe 完成鉴权交换（token 含 '-'，字符类勿漏）。
+TOKEN_URL=$(grep -oE 'http://127\.0\.0\.1:[0-9]+/\?token=[A-Za-z0-9_-]+' "$STAGE_ROOT/server.log" | head -1)
+[ -n "$TOKEN_URL" ] || { echo "!! 未在 server.log 找到 token URL"; cat "$STAGE_ROOT/server.log"; exit 1; }
+
 echo "==> [3/4] smoke.sh"
 SMOKE_RC=0
-bash "$REPO/scripts/fork/smoke.sh" "http://127.0.0.1:$PORT" || SMOKE_RC=$?
+DSH_SMOKE_TOKEN_URL="$TOKEN_URL" bash "$REPO/scripts/fork/smoke.sh" "http://127.0.0.1:$PORT" || SMOKE_RC=$?
 
 echo "==> [4/4] browser-probe（--strict）"
 PROBE_RC=0
-node "$REPO/scripts/fork/browser-probe.mjs" --url "http://127.0.0.1:$PORT" --out "$STAGE_ROOT/probe" --strict || PROBE_RC=$?
+node "$REPO/scripts/fork/browser-probe.mjs" --url "http://127.0.0.1:$PORT" --token-url "$TOKEN_URL" --out "$STAGE_ROOT/probe" --strict || PROBE_RC=$?
 PROBE_JSON="$STAGE_ROOT/probe/probe.json"
 [ -f "$PROBE_JSON" ] && node -e "
 const r = require('$PROBE_JSON');

@@ -5,7 +5,7 @@
 #
 # 层定义（每层对应一次实际发生过的故障模式）：
 #   L1 服务存活        — HTTP 探测（不用 ps：隔离 PID namespace 下 ps 看不到宿主进程）
-#   L2 插件 bundle 可服务 — /plugins/dsh-better-sidebar/client.js 与 terminal chunk 均 200
+#   L2 插件 bundle 可服务 — terminal chunk 200；首页注入的 /plugins/?? 聚合 client bundle 可达
 #   L3 PTY 依赖        — POST /sidebar/api/terminal.deps → ok（node-pty 随环境腐烂会在此暴露）
 #   L4 WS+PTY 往返     — 真实 WebSocket 升级 + PTY echo 断言
 #   L5 栅栏正向        — LAN IP authority（bind 0.0.0.0 自动信任面）访问 /api 与 /sidebar 非 403
@@ -18,19 +18,37 @@ HOSTPORT=${BASE#http://}
 REPO=$(cd "$(dirname "$0")/../.." && pwd)
 FAILS=0
 
+# L0 鉴权交换：上游 0.1.2-alpha.1 起页面与 /api 走一次性 token → 会话 cookie。
+# DSH_SMOKE_TOKEN_URL 由调用方（plugin-stage.sh / install.sh）从服务日志提取；
+# 未提供时跳过（旧宿主无鉴权），需要 cookie 的层会随后报 401 暴露缺失。
+COOKIE_JAR=$(mktemp)
+COOKIE_ARGS=()
+if [ -n "${DSH_SMOKE_TOKEN_URL:-}" ]; then
+  curl -s -o /dev/null -c "$COOKIE_JAR" --max-time 5 "$DSH_SMOKE_TOKEN_URL"
+  COOKIE_ARGS=(-b "$COOKIE_JAR")
+fi
+trap 'rm -f "$COOKIE_JAR"' EXIT
+
 layer() { # layer <名> <结果0|1> <详情>
   if [ "$2" = 0 ]; then echo "[PASS] $1"; else echo "[FAIL] $1 — $3"; FAILS=$((FAILS + 1)); fi
 }
 
 # L1 服务存活
-code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "$BASE/" 2>/dev/null)
+code=$(curl -s -o /dev/null -w '%{http_code}' "${COOKIE_ARGS[@]}" --max-time 5 "$BASE/" 2>/dev/null)
 [ "$code" = 200 ]; layer "L1 存活 GET / => $code" $? "期待 200，得到 $code（服务未起或端口不对）"
 
-# L2 插件 bundle
-for p in "/plugins/dsh-better-sidebar/client.js" "/sidebar/bundle/terminal.js"; do
-  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "$BASE$p" 2>/dev/null)
-  [ "$code" = 200 ]; layer "L2 bundle $p => $code" $? "期待 200（插件包或 chunk 服务失败）"
-done
+# L2 插件 bundle：terminal chunk 直连；client bundle 走上游 ?? 聚合端点
+# （0.1.2-alpha.1 起单包 /plugins/<id>/client.js 不再单独服务，聚合 URL 以
+# 首页 script 标签为准——rev 是内容哈希，不能静态断言）。
+code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "$BASE/sidebar/bundle/terminal.js" 2>/dev/null)
+[ "$code" = 200 ]; layer "L2a chunk /sidebar/bundle/terminal.js => $code" $? "期待 200（插件 chunk 服务失败）"
+combo=$(curl -s "${COOKIE_ARGS[@]}" --max-time 5 "$BASE/" 2>/dev/null | grep -oE '/plugins/\?\?[^" ]+client\.js[^" ]*' | head -1)
+combo=${combo//'&amp;'/'&'}
+[ -n "$combo" ]; layer "L2b 首页含 ?? 聚合 client bundle" $? "首页未注入 /plugins/?? 聚合 script（client-modules 未挂载？）"
+if [ -n "$combo" ]; then
+  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "$BASE$combo" 2>/dev/null)
+  [ "$code" = 200 ]; layer "L2c 聚合 bundle (${#combo} 字符) => $code" $? "期待 200（聚合端点服务失败）"
+fi
 
 # L3 PTY 依赖
 body=$(curl -s --max-time 5 -X POST "$BASE/sidebar/api/terminal.deps" 2>/dev/null)
@@ -40,7 +58,7 @@ echo "$body" | grep -q '"ok":true'; layer "L3 terminal.deps" $? "响应: ${body:
 ws_result=$(node --input-type=module -e "
 const mark = 'smoke-' + process.pid;
 // 终端 WS 协议要求 sessionId 与 tab 查询参数，缺省会话层直接 close
-const ws = new WebSocket('ws://$HOSTPORT/sidebar/ws/terminal?sessionId=smoke-probe&tab=smoke');
+const ws = new WebSocket('ws://$HOSTPORT/sidebar/ws/terminal?sessionId=smoke-probe&tab=smoke&cwd=/tmp');
 const done = new Promise((resolve) => {
   const t = setTimeout(() => resolve('timeout：5s 内无 PTY 回显'), 5000);
   ws.onopen = () => ws.send('\n echo ' + mark + ' \n');
@@ -81,7 +99,7 @@ ws_code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 -H "Host: $UNTRUST
 [ "$ws_code" != 101 ]; layer "L6c 伪造 Host → WS upgrade => $ws_code" $? "期待非 101（$UNTRUSTED_HOST 的 WS 升级被放行说明 Host 栅栏失效）"
 
 # L7 版本一致（结构化 global 行渲染为 globalThis["__DSH_WEB_VERSION__"] = "..."）
-injected=$(curl -s --max-time 5 "$BASE/" 2>/dev/null | grep -oE '__DSH_WEB_VERSION__"\] = "[^"]*"' | head -1 | grep -oE '"[^"]*"$' | tr -d '"')
+injected=$(curl -s "${COOKIE_ARGS[@]}" --max-time 5 "$BASE/" 2>/dev/null | grep -oE '__DSH_WEB_VERSION__"\] = "[^"]*"' | head -1 | grep -oE '"[^"]*"$' | tr -d '"')
 expected=$(grep -o '"version": *"[^"]*"' "$REPO/packages/bundle/web-app/package.json" | head -1 | cut -d'"' -f4)
 [ -n "$injected" ] && [ "$injected" = "$expected" ]
 layer "L7 版本一致 ($injected vs $expected)" $? "注入版本为空或不等于仓库 web-app 版本（服务跑的是旧构建？）"
