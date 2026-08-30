@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>上游同步报告：0.1.1-rc.2 → 0.1.2-alpha.1（2026-08-30）</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   HTML Report Style — Design System v3（完整样式内联，自包含）
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  color-scheme: light;
+  --bg: #f5f7fa; --panel: #ffffff; --ink: #17212f; --muted: #5c6b7a;
+  --line: #d8e0ea; --soft: #eef4fb; --accent: #0b6fcb; --accent-ink: #074d8d;
+  --accent-soft: rgba(11, 111, 203, 0.14);
+  --ok: #176b4d; --ok-bg: #e8f6ef; --warn: #9a5b00; --warn-bg: #fff4db;
+  --risk: #b42318; --risk-bg: #ffeceb; --code-bg: #eef1f5;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--ink); font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+img, svg, video { max-width: 100%; height: auto; }
+::selection { background: #bcd9f7; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+header { padding: 42px 24px 34px; background: #132238; color: #fff; border-bottom: 5px solid var(--accent); }
+header h1 { max-width: 980px; font-size: clamp(28px, 5vw, 44px); font-weight: 760; line-height: 1.25; }
+header .lede { max-width: 980px; margin-top: 12px; color: #c3d2e5; font-size: clamp(15px, 2vw, 17px); line-height: 1.55; }
+.meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.meta span { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 10px; border: 1px solid rgba(255,255,255,.24); border-radius: 6px; background: rgba(255,255,255,.1); font-size: 14px; white-space: nowrap; }
+main { max-width: 1180px; margin: 0 auto; padding: 28px 24px 56px; }
+.summary, .toc, section { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 1px 2px rgba(16,24,40,.04); }
+.summary { padding: 22px; margin-bottom: 20px; }
+.toc { padding: 18px 22px; }
+section { padding: 24px; margin-top: 20px; }
+section[id], h2[id], h3[id], h4[id] { scroll-margin-top: 14px; }
+section:target { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+h1, h2, h3 { line-height: 1.25; }
+h1 { margin: 0; }
+h2 { margin-top: 34px; padding-bottom: 8px; border-bottom: 1px solid var(--line); font-size: 24px; }
+h3 { margin-top: 24px; font-size: 18px; }
+h4 { margin-top: 18px; font-size: 16px; font-weight: 650; }
+section h2:first-child { margin-top: 0; }
+.summary > h2:first-child { margin-top: 0; padding-bottom: 0; border-bottom: 0; font-size: 20px; }
+p { margin: 12px 0; }
+ul, ol { padding-left: 22px; }
+li { margin: 6px 0; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+blockquote { margin: 16px 0; padding: 10px 16px; border-left: 3px solid var(--line); border-radius: 0 6px 6px 0; background: #fbfcfe; color: #37485c; }
+blockquote p { margin: 6px 0; }
+code { padding: 2px 5px; border-radius: 4px; background: var(--code-bg); font-family: var(--mono); font-size: .92em; }
+pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-size: .9rem; line-height: 1.55; white-space: pre; font-family: var(--mono); }
+pre code { padding: 0; background: none; border-radius: 0; font-size: inherit; }
+.tbl-wrap { margin: 16px 0; overflow-x: auto; }
+.tbl-wrap table { margin: 0; }
+table { width: 100%; border-collapse: collapse; margin: 16px 0; font-variant-numeric: tabular-nums; }
+caption { caption-side: top; padding-bottom: 8px; color: var(--muted); font-size: .9rem; font-weight: 600; text-align: left; }
+th, td { padding: 10px 12px; border: 1px solid var(--line); vertical-align: top; text-align: left; }
+thead th { position: sticky; top: 0; z-index: 1; background: #eef4fb; color: #1d334d; font-weight: 750; }
+td code { overflow-wrap: anywhere; }
+tr.highlight { background: #fef3c7; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.dense { font-size: .88rem; }
+table.dense th, table.dense td { padding: 7px 9px; }
+table.zebra tbody tr:nth-child(even) { background: #f7fafd; }
+.toc h2 { margin-top: 0; padding-bottom: 0; border-bottom: 0; font-size: 20px; }
+.toc ol { columns: 2; margin: 12px 0 0; padding-left: 24px; }
+.kv { margin: 16px 0; border-top: 1px solid var(--line); }
+.kv > div { display: grid; grid-template-columns: 200px minmax(0,1fr); gap: 2px 16px; padding: 8px 2px; border-bottom: 1px solid var(--line); }
+.kv dt { color: var(--muted); font-size: .92rem; font-weight: 600; word-break: break-word; }
+.kv dd { min-width: 0; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; margin: 16px 0; }
+.stat { padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfe; }
+.stat b { display: block; color: var(--accent-ink); font-size: 26px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.stat span { display: block; margin-top: 4px; color: var(--muted); font-size: .86rem; }
+.stat.ok b { color: var(--ok); } .stat.warn b { color: var(--warn); } .stat.risk b { color: var(--risk); }
+.badge { display: inline-flex; align-items: center; min-height: 24px; padding: 2px 8px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.ok { background: var(--ok-bg); color: var(--ok); } .warn { background: var(--warn-bg); color: var(--warn); }
+.risk { background: var(--risk-bg); color: var(--risk); } .info { background: var(--soft); color: var(--accent-ink); }
+.callout { margin: 16px 0; padding: 14px 16px; border-left: 4px solid var(--accent); border-radius: 6px; background: var(--soft); }
+.callout.warn { border-left-color: var(--warn); background: var(--warn-bg); }
+.callout.risk { border-left-color: var(--risk); background: var(--risk-bg); }
+.callout.ok { border-left-color: var(--ok); background: var(--ok-bg); }
+details { margin: 16px 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+summary { cursor: pointer; color: var(--accent-ink); font-weight: 650; }
+details[open] summary { margin-bottom: 8px; }
+.highlight, mark { background: #fef08a; padding: 0 .15rem; border-radius: 2px; }
+.note { color: var(--muted); font-size: .9rem; }
+@media (max-width: 900px) {
+  header { padding: 24px 16px 20px; } main { padding: 16px 12px 32px; }
+  .toc ol { columns: 1; } .kv > div { grid-template-columns: 1fr; } table { display: block; overflow-x: auto; }
+}
+@media print {
+  body { background: #fff; font-size: 11.5pt; }
+  header { padding: 0 0 14pt; background: none; color: #000; border-bottom: 2pt solid #000; }
+  header .lede { color: #333; } .meta span { border-color: #aaa; background: none; color: #333; }
+  main { max-width: none; padding: 0; }
+  .summary, .toc, section { box-shadow: none; border-color: #bbb; }
+  section { margin-top: 14pt; } h2, h3, h4 { break-after: avoid; }
+  .callout, .stat, pre, blockquote, tr, details, .kv > div { break-inside: avoid; }
+  thead { display: table-header-group; } table { display: table; } pre { white-space: pre-wrap; word-break: break-word; }
+  a { color: #000; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>上游同步报告：0.1.1-rc.2 → 0.1.2-alpha.1</h1>
+  <p class="lede">五天窗口积压 1079 个上游提交一次性收编。两个 fork 自有 feature（LAN 可信网段栅栏、random-uuid）因二次冲突规则/上游原生覆盖而退役，版本行与 claude-code 挂载在新基线重放；冒烟/探针/部署链全面适配上游新鉴权与聚合 bundle 机制。插件同窗口升级 0.17.1（alpha.1 适配版），线上 12 项冒烟全绿。</p>
+  <div class="meta" aria-label="报告元信息">
+    <span>日期：2026-08-30</span>
+    <span>范围：dsh-v0.1.1-rc.2 → dsh-v0.1.2-alpha.1（1079 commits）</span>
+    <span>插件：dsh-better-sidebar 0.16.1 → 0.17.1</span>
+    <span>状态：<span class="badge ok">已部署 · 冒烟全绿</span></span>
+    <span>SESSION_FORMAT_VERSION：<span class="badge ok">0（未变）</span></span>
+  </div>
+</header>
+
+<main>
+
+  <article class="summary">
+    <h2>结论摘要</h2>
+    <p>本窗口是 fork 史上规模最大的一次同步：上游在 rc.2 之后把 <strong>RPC/连接层整体重构</strong>（ApiProxy 包退役、transport 收进 connection）、引入<strong>一次性 token 浏览器鉴权</strong>、把 <code>--host 0.0.0.0</code> 设为 CLI 拒绝项、重写全部包文档结构。<code>connection/src/index.ts</code> 连续第二个窗口冲突，触发二次冲突规则，经确认后 <strong>fork 的 trustedNetworks 栅栏整体退役</strong>——上游「bind-all 自动信任本机 LAN IPv4」机制完全覆盖我们的部署语义，部署回归纯配置层（profile patch 的 <code>?? '0.0.0.0'</code> 兜底）。fork delta 从 83 个 M/D 缩至 <strong>41</strong>。认领面命中 1892 个文件全部审结，typecheck/build/兜底测试/认领门禁/staging/线上冒烟全绿。</p>
+    <div class="stats">
+      <div class="stat"><b>1079</b><span>上游提交（6421 文件，命中认领面 1892）</span></div>
+      <div class="stat ok"><b>2</b><span>fork feature 退役（LAN fence、random-uuid）</span></div>
+      <div class="stat ok"><b>41</b><span>认领后 M/D（原 83，同步阻碍减半）</span></div>
+      <div class="stat ok"><b>12/12</b><span>线上冒烟层数全绿（含聚合 bundle）</span></div>
+      <div class="stat warn"><b>0.17.1</b><span>插件同窗口升级（alpha.1 适配）</span></div>
+    </div>
+  </article>
+
+  <nav class="toc" aria-label="目录">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#sec-1">上游更新日志（按主题）</a></li>
+      <li><a href="#sec-2">同步审查：退役决议</a></li>
+      <li><a href="#sec-3">同步审查：重放与冲突决议</a></li>
+      <li><a href="#sec-4">部署资产改造与新鉴权语义</a></li>
+      <li><a href="#sec-5">插件窗口：0.17.1</a></li>
+      <li><a href="#sec-6">门禁与结果</a></li>
+      <li><a href="#sec-7">遗留项与用户须知</a></li>
+    </ol>
+  </nav>
+
+  <!-- ═══════════ §1 上游更新日志 ═══════════ -->
+  <section id="sec-1">
+    <h2>1. 上游更新日志（按主题）</h2>
+
+    <h3>1.1 RPC / 连接层大重构（本窗口最大主线）</h3>
+    <p>ApiProxy 包整体退役：<code>refactor(api): remove ApiProxy package</code> 及前置系列把 settings、credentials、directory-picker 等 RPC 从通用代理迁移到各域 Remote 控制器（<code>api-gateway</code>、<code>session-controller</code>、<code>workspace-controller</code>），transport 契约收进 connection 包自身（own RPC transport contracts），并注册精确 Fetch 路由。Host 事实（账号 home、原生打开能力等）改由 generation 携带（carry Host facts with generations）。</p>
+    <p><strong>与 fork 面的交互</strong>：fork 的 apiproxy 非安全上下文 RPC id 修复随包消亡；其问题域（浏览器侧 id 生成）由上游 <code>dsh-util-crypto</code>（getRandomValues 实现 + <code>no-restricted-properties</code> lint 强制全仓替换）与 connection 内置 browser-safe <code>random-uuid.ts</code> 原生解决——fork 的 <code>@deepseek-ai/dsh-random-uuid</code> 包退役。</p>
+
+    <h3>1.2 浏览器鉴权（用户可见 Breaking）</h3>
+    <p>Web GUI 改为一次性 token URL 鉴权：<code>dsh web</code> 启动打印带进程 token 的 URL，浏览器首次访问换取签名会话 cookie（默认 30 天，<code>cookieMaxAgeDays</code> 可配），重定向到干净根 URL；裸 URL 一律 401。Host/Origin 栅栏仍在（防 DNS rebinding），但鉴权与可达性明确分层——上游 JSDoc：网络可达性归部署层，栅栏不是认证。</p>
+    <div class="callout warn"><strong>⚠️ 用户须知：</strong>服务重启后打印新 token URL（journalctl 可查）；浏览器已有会话 cookie 在有效期内免 token 直访。详见第 7 节。</div>
+
+    <h3>1.3 CLI 与栅栏语义</h3>
+    <ul>
+      <li><code>--host 0.0.0.0</code> 被 CLI 以安全理由拒绝（"intentionally not supported yet"）；但 webserver config 层仍接受该值，且 bind-all 时自动把本机所有非 internal IPv4 字面量加入 <code>/api</code> 信任面（LAN IP 直访放行）。</li>
+      <li><code>--trusted-host</code> 保持（host 或 host:port authority，可重复）。</li>
+      <li>Agent Presets 从 <code>apps/cli/config/agent-presets/</code> 迁至 <code>packages/preset/agent-presets/presets/</code>。</li>
+    </ul>
+
+    <h3>1.4 webserver 注入与客户端 bundle 聚合</h3>
+    <p>页面注入改为结构化 <code>IndexInjection</code> 行 + <code>webserver/index-inject</code> 事件（global/script/script-src/style 行），<code>tapIndex</code> 降为 escape hatch。客户端插件 bundle 改经 <code>/plugins/??pkg1/client.js,pkg2/client.js&rev=…</code> <strong>聚合端点</strong>按启动图组合服务，单包 <code>/plugins/&lt;id&gt;/client.js</code> 不再单独服务（未登记组合 404）。</p>
+
+    <h3>1.5 其他主线</h3>
+    <ul>
+      <li><strong>code-mode → PTC 重命名</strong>：全仓词汇统一（含文档与配置目录 <code>presets/ptc/</code>）。</li>
+      <li><strong>Inspector 增强</strong>：CDP DOM 暴露 Cordis 树、CDP Network 投影 Host fetch、CDP Worker 服务 Runtime、开发挂载 overlay。</li>
+      <li><strong>Web UX</strong>：ui-conversation 在最终回答前折叠 turn 过程（#2547）、@ mention 行裁剪降发现成本、flow-row 次级字体统一。</li>
+      <li><strong>Session</strong>：persistence 存储体积缩减（#3048）、session-export 自有下载路由、file-reference 输出按 project 隔离。</li>
+      <li><strong>subagent</strong>：可选子模型授权（authorize selectable child models）。</li>
+      <li><strong>文档体系</strong>：全部包 README 重写为 frontmatter + Summary/TOC/锚点结构，双语配对 hash 机制上线（本窗口多次救了我们：重放后立即暴露失同步）。</li>
+    </ul>
+  </section>
+
+  <!-- ═══════════ §2 退役决议 ═══════════ -->
+  <section id="sec-2">
+    <h2>2. 同步审查：退役决议</h2>
+
+    <h3>2.1 LAN trusted-network fence 退役（二次冲突规则）</h3>
+    <p><code>connection/src/index.ts</code> 连续两个同步窗口冲突（8-24 与本窗口），按 CLAUDE.local.md 规则 2 停止修补、向用户提案。证据链：</p>
+    <ul>
+      <li>上游 alpha.1 的 Host/Origin 栅栏在 bind-all 时<strong>自动信任本机 LAN IPv4 字面量</strong>——fork 部署（<code>--host 0.0.0.0</code>）的 LAN 直访需求被原生覆盖；</li>
+      <li>上游明确把「网络可达性/源 IP 检查」排除在栅栏职责外（归部署层），fork 的源 IP 网段检查与其威胁模型定位重叠度低（本部署 LAN 外经路由器 NAT 不可达）；</li>
+      <li>插件化不可行：栅栏判定深埋 HostConnectionService 构造与 api-request-trust 调用链，无扩展点。</li>
+    </ul>
+    <p>用户确认「退役，全采上游」。删除面：<code>trusted-network.ts</code>、<code>web-trust.ts</code>、<code>__DSH_WEB_TRUST__</code> 页面注入、<code>--trusted-network</code> CLI 参数、<code>http-bridge.ts</code> 的 FetchSource 管线、相关测试与文档段。部署改走 <strong>纯配置层</strong>：systemd ExecStart 裸 <code>dsh web</code>，profile patch 的 <code>ctx.webStartup.host ?? '0.0.0.0'</code> 兜底绑全网卡（deploy patch 8-24 已预置）。</p>
+
+    <h3>2.2 random-uuid / apiproxy 修复退役（上游原生覆盖）</h3>
+    <p>fork 2026-08-17 修复「非安全上下文 RPC id」的四个应用点（apiproxy mintRpcId、llm createMessage、composer draft ids、connection correlation ids）在 alpha.1 全部有上游等价实现（见 1.1）。<code>packages/util/random-uuid</code> 整包删除；被 fork 当年删除的上游文件 <code>connection/src/client/random-uuid.ts</code> 恢复。apiproxy 包删除按「认领面消失」规则接受。</p>
+  </section>
+
+  <!-- ═══════════ §3 重放 ═══════════ -->
+  <section id="sec-3">
+    <h2>3. 同步审查：重放与冲突决议</h2>
+    <div class="tbl-wrap">
+      <table class="dense zebra">
+        <caption>表 1：48 个冲突文件的分组决议</caption>
+        <thead><tr><th>组</th><th>规模</th><th>决议</th></tr></thead>
+        <tbody>
+          <tr><td>connection 组（rpc/fixture/index/rpc-host/tsconfig/README 等）</td><td class="num">14</td><td>取上游；仅重放 <code>web-version.ts</code> 导出与客户端 <code>webVersion</code> 镜像（optional 字段，不动上游测试 fixture）</td></tr>
+          <tr><td>UD 删除组（apiproxy×3、runtime tests×2）</td><td class="num">5</td><td>接受上游删除（transport 移进 connection，测试随迁）</td></tr>
+          <tr><td>settings 版本行（ui-settings-general、settings-scope、README）</td><td class="num">5</td><td>上游新文档结构为基底，重放版本行三语文案（Summary/General 节/Known Limitations）</td></tr>
+          <tr><td>claude-code 挂载（base spec/README、subagent README、reference、e2e）</td><td class="num">10</td><td>保 fork 语义 + 吸收上游新断言（hmr/web-fetch-http）；遥测默认 <code>DISABLED</code> 保留</td></tr>
+          <tr><td>web-app（index/spec/README/startup）</td><td class="num">7</td><td>取上游；版本行注入改走 <code>webserver/index-inject</code> 结构化 global 行（tapIndex 已不在测试 fake 上）</td></tr>
+          <tr><td>config-catalog ×3、lockfile、verify 脚本</td><td class="num">5</td><td>取上游（random-uuid 条目随源码消失；hash 由 <code>--write</code> 重录）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout risk">
+      <strong>❌ 抓获一次静默回退：</strong>auto-merge 把 base bundle 遥测默认从 fork 的 <code>'DISABLED'</code> 静默合成回上游 <code>'FEEDBACK_ONLY'</code>（行级合并不报警）。对照 fork master 基线核对 cordis.patch.yml 后修正——「feat 不静默坏」门禁的实际价值案例，已写入本报告留档。
+    </div>
+  </section>
+
+  <!-- ═══════════ §4 部署资产 ═══════════ -->
+  <section id="sec-4">
+    <h2>4. 部署资产改造与新鉴权语义</h2>
+    <dl class="kv">
+      <div><dt>systemd unit</dt><dd>ExecStart <code>dsh web --host 0.0.0.0 --trusted-network …</code> → 裸 <code>dsh web</code>（上游 CLI 拒绝 0.0.0.0 参数；绑定由 profile patch 兜底）</dd></div>
+      <div><dt>smoke.sh</dt><dd>新增 L0 token→cookie 交换（<code>DSH_SMOKE_TOKEN_URL</code>，journalctl/服务日志提取；token 为 base64url 含 <code>-_</code>）；L2 改验 <code>/plugins/??</code> 聚合 bundle（从首页提取 URL 并还原 <code>&amp;amp;</code> 实体）；L4 加 <code>?cwd=/tmp</code>（无持久会话的 pty 打开路径，插件为 headless 场景设计）；L5/L6 改 authority 语义（LAN 直访正向 / 伪造 Host 负向）；L7 适配 <code>globalThis["…"] =</code> 渲染格式</dd></div>
+      <div><dt>browser-probe.mjs</dt><dd><code>--token-url</code> 先完成 cookie 交换再探测（单次 goto——二次 goto 会把首屏 API 中断成 ERR_ABORTED 假阳性）；移除已退役的 <code>__DSH_WEB_TRUST__</code> 读取</dd></div>
+      <div><dt>plugin-stage.sh</dt><dd>不再传栅栏参数（staging profile 同样走 patch 兜底）；从 server.log 提取 token URL 传递给 smoke/probe</dd></div>
+      <div><dt>install.sh</dt><dd>冒烟前从 <code>journalctl --user -u dsh-web</code> 提取本次启动的 token URL</dd></div>
+      <div><dt>SKILL</dt><dd>第 3 步兜底测试清单剔除已删除的 <code>host/apiproxy</code></dd></div>
+    </dl>
+  </section>
+
+  <!-- ═══════════ §5 插件窗口 ═══════════ -->
+  <section id="sec-5">
+    <h2>5. 插件窗口：dsh-better-sidebar 0.16.1 → 0.17.1</h2>
+    <p>0.17.1（2026-08-28 发布）是<strong>针对 DSH 0.1.2-alpha.1 的适配版</strong>：适配 Remote gateway、一次性 token 鉴权、<code>MarkdownText</code> labels 契约三项破坏性变更，同时向后兼容 rc.x 宿主；移除已在上游删除的 <code>dsh-client-runtime</code> peer（peer 清单 14→13，为 0.16.0 #338 移除公开版 cordis 的预告效果，预期内）。<strong>不升级则 markdown/mermaid 预览在 alpha.1 宿主上崩溃</strong>——本窗口必须同上。</p>
+    <p>staging 冒烟首轮红（3 层）暴露的均为<strong>我们冒烟基建未适配新鉴权</strong>而非插件缺陷：token URL 提取两次截断 bug（<code>cut -f2</code> 列错、字符类漏 <code>_</code>）、probe 双 goto 假阳性、聚合端点 404（上游预期）。逐一修复后 staging 全绿 → pin 0.17.1 + lockfile → 随部署上线。</p>
+  </section>
+
+  <!-- ═══════════ §6 门禁 ═══════════ -->
+  <section id="sec-6">
+    <h2>6. 门禁与结果</h2>
+    <div class="tbl-wrap">
+      <table class="dense">
+        <caption>表 2：本窗口门禁记录</caption>
+        <thead><tr><th>门禁</th><th>结果</th><th>备注</th></tr></thead>
+        <tbody>
+          <tr><td>typecheck（host + client faces）</td><td><span class="badge ok">PASS</span></td><td>修复 6 处收尾残留后全绿</td></tr>
+          <tr><td>pnpm run build</td><td><span class="badge ok">PASS</span></td><td>218 client artifacts</td></tr>
+          <tr><td>vitest 兜底（web-app/connection/base）</td><td><span class="badge ok">138/138</span></td><td>web-app 21/21 复验</td></tr>
+          <tr><td>sync-scope check</td><td><span class="badge ok">PASS</span></td><td>41 M/D 全认领，受保护路径零 diff</td></tr>
+          <tr><td>translation pairing</td><td><span class="badge ok">1076 对一致</span></td><td>重放的四对 README hash 重录</td></tr>
+          <tr><td>staging（plugin-stage.sh 0.17.1）</td><td><span class="badge ok">全绿</span></td><td>smoke 12 项 + probe --strict 零错误</td></tr>
+          <tr><td>线上 deploy/install.sh</td><td><span class="badge ok">全绿</span></td><td>冷装→切换→重启→冒烟；回滚未触发</td></tr>
+          <tr><td>线上复核</td><td><span class="badge ok">12/12</span></td><td>版本行 <code>0.1.2-alpha.1</code> 注入一致；插件 0.17.1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>合并链：<code>50b1f731e4</code>（merge + 冲突决议）→ <code>6ebe44a0fc</code>（门禁修正）→ <code>6f7e465c5f</code>（鉴权/聚合适配 + 0.17.1）→ <code>915bd51f12</code>（master --no-ff 合入）。</p>
+  </section>
+
+  <!-- ═══════════ §7 遗留 ═══════════ -->
+  <section id="sec-7">
+    <h2>7. 遗留项与用户须知</h2>
+    <h3>7.1 浏览器访问方式变化（本窗口最重要的用户可见变化）</h3>
+    <ul>
+      <li>服务启动打印一次性 token URL（如 <code>http://10.147.20.97:3080/?token=…</code>，journal 里同时给 loopback 与 LAN 两种）；首次访问换 30 天签名 cookie，之后裸 URL 直达。</li>
+      <li><strong>重启服务后旧 cookie 失效</strong>：需从 <code>journalctl --user -u dsh-web | grep 'dsh web:'</code> 拿新 token URL（install.sh 冒烟已自动化此步）。</li>
+      <li>LAN 内其他设备同样首访需 token——这是上游的 LAN 鉴权设计，fork 未放宽。</li>
+    </ul>
+    <h3>7.2 观察项</h3>
+    <ul>
+      <li><code>terminalClick</code> 探针仍「未找到终端入口」（宿主首次运行向导遮挡，非缺陷；可后续给 probe 加关向导步骤）。</li>
+      <li>旧 profile 与 0.16.1 现场保留在 <code>~/.dsh/.deploy-backups/</code>；稳定数日可清理。</li>
+      <li>版本行注入已改上游结构化机制（<code>webserver/index-inject</code>），SURFACES 认领表已同步该面的新文件清单。</li>
+    </ul>
+  </section>
+
+  <p class="note">🤖 Generated with Claude Code</p>
+</main>
+</body>
+</html>

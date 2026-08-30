@@ -42,7 +42,7 @@ git merge --no-ff <tag>                           # 用户规则：merge 一律 
 
 ```sh
 pnpm run typecheck && pnpm run build
-pnpm exec vitest run bundle/web-app client/connection bundle/base host/apiproxy   # SURFACES 命中面的兜底测试
+pnpm exec vitest run bundle/web-app client/connection bundle/base          # SURFACES 命中面的兜底测试
 node scripts/fork/sync-scope.mjs snapshot && node scripts/fork/sync-scope.mjs check
 ```
 

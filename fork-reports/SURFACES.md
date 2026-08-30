@@ -59,7 +59,7 @@
 
 ## 当前 delta 快照（生成，勿手改）
 
-统计：103 个文件（M/D 42，A 61）；已认领 M/D：100。
+统计：102 个文件（M/D 41，A 61）；已认领 M/D：100。
 
 | 状态 | 路径 | 认领 |
 |---|---|---|
@@ -135,7 +135,6 @@
 | M | `packages/bundle/web-app/README.md` | 认领:feat(web-app): settings 版本行 |
 | M | `packages/bundle/web-app/README.zh.md` | 认领:feat(web-app): settings 版本行 |
 | M | `packages/bundle/web-app/src/index.ts` | 认领:feat(web-app): settings 版本行 |
-| M | `packages/bundle/web-app/tests/browser-open.spec.ts` | ⚠️ 未认领 |
 | M | `packages/bundle/web-app/tsconfig.json` | 认领:feat(web-app): settings 版本行 |
 | M | `packages/client/connection/src/client/index.ts` | 认领:feat(web-app): settings 版本行 |
 | M | `packages/client/connection/src/index.ts` | 认领:feat(web-app): settings 版本行 |

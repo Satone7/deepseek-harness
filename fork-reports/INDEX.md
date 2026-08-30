@@ -17,6 +17,7 @@ YYYY-MM-DD-upstream-<from>-to-<to>.html
 
 | 日期 | 同步范围 | 报告 |
 |---|---|---|
+| 2026-08-30 | 0.1.1-rc.2 → 0.1.2-alpha.1(1079 commits,主线为 RPC/连接层大重构、token 浏览器鉴权、CLI 拒绝 0.0.0.0;二次冲突规则触发 → LAN fence 退役、random-uuid/apiproxy 退役,fork M/D 83→41;冒烟/探针/部署链适配 token+聚合 bundle;插件 0.16.1→0.17.1 alpha.1 适配版,线上 12 项冒烟全绿) | [2026-08-30-upstream-0.1.1-rc.2-to-0.1.2-alpha.1.html](2026-08-30-upstream-0.1.1-rc.2-to-0.1.2-alpha.1.html) |
 | 2026-08-24 | 0.1.1-rc.1 → 0.1.1-rc.2(35 commits,主线为图像管线统一化;同窗口含终端/预览根因修复、栅栏收口、插件 0.15.2;首次按 fork-upstream-sync SKILL 执行) | [2026-08-24-upstream-0.1.1-rc.1-to-0.1.1-rc.2.html](2026-08-24-upstream-0.1.1-rc.1-to-0.1.1-rc.2.html) |
 | 2026-08-21 | 0.1.0-rc.7 → 0.1.1-rc.1(99f6f02fec → 528c682e06,448 commits) | [2026-08-21-upstream-rc.7-to-0.1.1-rc.1.html](2026-08-21-upstream-rc.7-to-0.1.1-rc.1.html) |
 
