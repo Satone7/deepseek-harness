@@ -73,7 +73,6 @@ describe('web app browser startup', () => {
       '    printUrl: false',
       '    surfaceContext: false',
       '    trustedHosts: []',
-      '    trustedNetworks: []',
       '',
     ].join('\n'))
 

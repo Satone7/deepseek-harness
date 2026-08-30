@@ -17,7 +17,11 @@
       "packages/client/connection/src/client/index.ts",
       "packages/client/connection/tsconfig.client.json",
       "packages/client/connection/tsconfig.host.json",
+      "packages/bundle/web-app/README.md",
+      "packages/bundle/web-app/README.zh.md",
+      "packages/bundle/web-app/README.i18n.yaml",
       "packages/bundle/web-app/src/index.ts",
+      "packages/bundle/web-app/tsconfig.json",
       "packages/client/ui-settings-general/**",
       "packages/client/ui-settings/src/client/settings-scope.ts",
       "packages/extensions/cordis-client-runner/src/client/slot-catalog.ts",
@@ -55,7 +59,7 @@
 
 ## 当前 delta 快照（生成，勿手改）
 
-统计：103 个文件（M/D 42，A 61）；已认领 M/D：96。
+统计：103 个文件（M/D 42，A 61）；已认领 M/D：100。
 
 | 状态 | 路径 | 认领 |
 |---|---|---|
@@ -127,12 +131,12 @@
 | M | `packages/bundle/base/cordis.patch.yml` | 认领:feat(base): 默认挂载 claude-code 子代理 + 遥测默认 DISABLED |
 | M | `packages/bundle/base/package.json` | 认领:feat(base): 默认挂载 claude-code 子代理 + 遥测默认 DISABLED |
 | M | `packages/bundle/base/tests/base.spec.ts` | 认领:feat(base): 默认挂载 claude-code 子代理 + 遥测默认 DISABLED |
-| M | `packages/bundle/web-app/README.i18n.yaml` | ⚠️ 未认领 |
-| M | `packages/bundle/web-app/README.md` | ⚠️ 未认领 |
-| M | `packages/bundle/web-app/README.zh.md` | ⚠️ 未认领 |
+| M | `packages/bundle/web-app/README.i18n.yaml` | 认领:feat(web-app): settings 版本行 |
+| M | `packages/bundle/web-app/README.md` | 认领:feat(web-app): settings 版本行 |
+| M | `packages/bundle/web-app/README.zh.md` | 认领:feat(web-app): settings 版本行 |
 | M | `packages/bundle/web-app/src/index.ts` | 认领:feat(web-app): settings 版本行 |
 | M | `packages/bundle/web-app/tests/browser-open.spec.ts` | ⚠️ 未认领 |
-| M | `packages/bundle/web-app/tsconfig.json` | ⚠️ 未认领 |
+| M | `packages/bundle/web-app/tsconfig.json` | 认领:feat(web-app): settings 版本行 |
 | M | `packages/client/connection/src/client/index.ts` | 认领:feat(web-app): settings 版本行 |
 | M | `packages/client/connection/src/index.ts` | 认领:feat(web-app): settings 版本行 |
 | A | `packages/client/connection/src/web-version.d.ts` | 新增(无需认领) |
