@@ -122,7 +122,7 @@ export interface ConnectionHandle {
    * injection (`__DSH_WEB_VERSION__`). Absent when the page was not served by
    * the Web host (component harnesses, non-browser contexts).
    */
-  readonly webVersion: string | undefined
+  readonly webVersion?: string | undefined
   /** Current Remote event generation and the Host facts carried by its opening frame. */
   readonly generation: ConnectionGenerationState
   /** Generic logical RPC channels over the same Connection transport. */

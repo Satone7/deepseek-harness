@@ -189,18 +189,6 @@ function productVersion(): string {
   return typeof manifest.version === 'string' ? manifest.version : '0.0.0'
 }
 
-/** Splice one inline script immediately after the page's `<head>` open tag. */
-function injectHeadScript(html: string, script: string): string {
-  const head = html.indexOf('<head>')
-  if (head !== -1) return `${html.slice(0, head + 6)}${script}${html.slice(head + 6)}`
-  return `${script}${html}`
-}
-
-/** Build the inline script that exposes the serving product version to the browser client. */
-function injectWebVersion(html: string, version: string): string {
-  return injectHeadScript(html, `<script>window.${WEB_VERSION_GLOBAL} = ${JSON.stringify(version)}</script>`)
-}
-
 /** Start the maintained platform opener without forwarding Harness credentials. */
 function spawnBrowserLauncher(url: string): ChildProcess {
   return spawn(process.execPath, [
@@ -263,12 +251,9 @@ export function apply(ctx: Context, config: Config): void {
   ctx.provide(WEB_RUNTIME_SERVICE, runtime)
   // The browser connection client does not receive host-row config through the
   // module graph, so expose the serving product version explicitly for it to mirror.
-  ctx.effect(
-    () => ctx.webServer.tapIndex(
-      html => injectWebVersion(html, productVersion()),
-    ),
-    'web-app: page bootstrap globals',
-  )
+  ctx.on('webserver/index-inject', (table) => {
+    table.push({ kind: 'global', name: WEB_VERSION_GLOBAL, value: productVersion() })
+  })
   ctx.plugin(FrontendStatic, { distIndex: internals.resolveDistIndex() })
   if (config.surfaceContext) {
     ctx.inject(['systemPrompt'], (promptCtx) => {

@@ -80,8 +80,8 @@ ws_code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 -H "Host: $UNTRUST
   "$BASE/sidebar/ws/terminal?sessionId=smoke-probe&tab=smoke" 2>/dev/null)
 [ "$ws_code" != 101 ]; layer "L6c 伪造 Host → WS upgrade => $ws_code" $? "期待非 101（$UNTRUSTED_HOST 的 WS 升级被放行说明 Host 栅栏失效）"
 
-# L7 版本一致
-injected=$(curl -s --max-time 5 "$BASE/" 2>/dev/null | grep -oE '__DSH_WEB_VERSION__ = "[^"]*"' | head -1 | cut -d'"' -f2)
+# L7 版本一致（结构化 global 行渲染为 globalThis["__DSH_WEB_VERSION__"] = "..."）
+injected=$(curl -s --max-time 5 "$BASE/" 2>/dev/null | grep -oE '__DSH_WEB_VERSION__"\] = "[^"]*"' | head -1 | grep -oE '"[^"]*"$' | tr -d '"')
 expected=$(grep -o '"version": *"[^"]*"' "$REPO/packages/bundle/web-app/package.json" | head -1 | cut -d'"' -f4)
 [ -n "$injected" ] && [ "$injected" = "$expected" ]
 layer "L7 版本一致 ($injected vs $expected)" $? "注入版本为空或不等于仓库 web-app 版本（服务跑的是旧构建？）"

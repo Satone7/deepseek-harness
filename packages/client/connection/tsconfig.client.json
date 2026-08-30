@@ -11,9 +11,9 @@
     "src/client/connection.ts",
     "src/client/fixture.ts",
     "src/client/index.ts",
+    "src/client/random-uuid.ts",
     "src/client/rpc.ts",
     "src/loopback-hostname.ts",
-
     "src/web-version.ts",
     "src/rpc.ts"
   ],

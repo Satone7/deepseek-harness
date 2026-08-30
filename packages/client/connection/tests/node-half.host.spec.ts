@@ -35,34 +35,23 @@ function fakeHttpServer(
 }
 
 /** Bodyless GET carrying the given headers (enough for the trust fence + bridge). */
-function fakeRequest(
-  headers: Record<string, string>,
-  url = `${API_PATH}/session.list`,
-  remoteAddress = '127.0.0.1',
-): IncomingMessage {
+function fakeRequest(headers: Record<string, string>, url = `${API_PATH}/session.list`): IncomingMessage {
   const request = Readable.from([]) as unknown as IncomingMessage
-  Object.assign(request, { url, method: 'GET', headers, socket: { remoteAddress } })
+  Object.assign(request, { url, method: 'GET', headers })
   return request
 }
 
 /** JSON POST carrying a complete client-request envelope. */
-function fakePost(
-  headers: Record<string, string>,
-  url: string,
-  body: unknown,
-  remoteAddress = '127.0.0.1',
-): IncomingMessage {
+function fakePost(headers: Record<string, string>, url: string, body: unknown): IncomingMessage {
   const request = Readable.from([Buffer.from(JSON.stringify(body))]) as unknown as IncomingMessage
-  Object.assign(request, {
-    url, method: 'POST', headers: { 'content-type': 'application/json', ...headers }, socket: { remoteAddress },
-  })
+  Object.assign(request, { url, method: 'POST', headers: { 'content-type': 'application/json', ...headers } })
   return request
 }
 
 /** Raw POST for malformed-body and media-type boundary cases. */
 function fakeRawPost(headers: Record<string, string>, url: string, body: string): IncomingMessage {
   const request = Readable.from([Buffer.from(body)]) as unknown as IncomingMessage
-  Object.assign(request, { url, method: 'POST', headers, socket: { remoteAddress: '127.0.0.1' } })
+  Object.assign(request, { url, method: 'POST', headers })
   return request
 }
 
@@ -92,7 +81,7 @@ function fakeResponse(): {
   return { response, state }
 }
 
-async function mounted(config?: { trustedHosts?: string[]; trustedNetworks?: string[] }): Promise<{
+async function mounted(config?: { trustedHosts?: string[] }): Promise<{
   routes: WebRoute[]
   upgrades: WebUpgradeRoute[]
   connection: HostConnectionHandle
@@ -202,94 +191,6 @@ describe('connection node half', () => {
     const forged = fakeResponse()
     await routes[0]!.handler(fakeRequest({ host: 'localhost:3080' }), forged.response)
     expect(forged.state).toMatchObject({ status: 401, body: 'unauthorized' })
-    await dispose()
-  })
-
-  it('fails the load on a trustedNetworks entry that is not a canonical IPv4 CIDR', async () => {
-    for (const entry of [
-      'harness.internal', '192.168.100.0', '192.168.100.0/24/16', '192.168.100.5/24',
-      '192.168.100.0/33', '192.168.100.0/024', '192.168.010.0/24', '192.168.100.0/',
-      '::1/128', 'fe80::/10', 'bad network',
-    ]) {
-      const routes: WebRoute[] = []
-      const upgrades: WebUpgradeRoute[] = []
-      const ctx = new Context()
-      ctx.provide('webServer', fakeHttpServer(routes, upgrades) as WebServer)
-      ctx.provide('apiProxy', {} as ApiProxy)
-      const fiber = ctx.plugin({ inject: [...inject], apply }, { trustedNetworks: [entry] })
-      await expect(fiber).rejects.toThrow(/not a canonical IPv4 CIDR/)
-      expect(routes).toHaveLength(0)
-      expect(upgrades).toHaveLength(0)
-    }
-  })
-
-  it('refuses a socket source outside the declared trusted networks before any Host judgment', async () => {
-    const { routes, upgrades, dispose } = await mounted({
-      trustedHosts: ['192.168.100.5'],
-      trustedNetworks: ['192.168.100.0/24', '10.147.20.0/24'],
-    })
-    // The Host is a declared authority and would pass the header fence; the
-    // socket came from a network the deployment never vouched for.
-    const denied = fakeResponse()
-    await routes[0]!.handler(
-      fakeRequest({ host: '192.168.100.5:3080' }, `${API_PATH}/session.list`, '203.0.113.9'),
-      denied.response,
-    )
-    expect(denied.state).toMatchObject({ status: 403, body: 'forbidden' })
-    const deniedUpgrade = new PassThrough()
-    const chunks: Buffer[] = []
-    deniedUpgrade.on('data', (chunk: Buffer) => { chunks.push(chunk) })
-    const ended = once(deniedUpgrade, 'end')
-    await upgrades[0]!.handler(fakeRequest({
-      host: '192.168.100.5:3080', origin: 'http://192.168.100.5:3080', 'sec-fetch-site': 'same-origin',
-    }, MUX_EVENTS_PATH, '203.0.113.9'), deniedUpgrade, Buffer.alloc(0))
-    await ended
-    expect(Buffer.concat(chunks).toString()).toContain('HTTP/1.1 403 Forbidden')
-    await dispose()
-  })
-
-  it('grants privileged methods to socket sources inside the declared trusted networks', async () => {
-    const { routes, dispose } = await mounted({
-      trustedHosts: ['192.168.100.5'],
-      trustedNetworks: ['192.168.100.0/24', '10.147.20.0/24'],
-    })
-    // A LAN member presents the server's own IP-literal Host (the shape the
-    // all-interfaces CLI derives) and reaches the configuration plane exactly
-    // like a local caller: the fence passes (404 is the empty proxy's carrier
-    // answer) instead of the loopback pin's 403.
-    const member = fakeResponse()
-    await routes[0]!.handler(
-      fakeRequest({ host: '192.168.100.5:3080' }, `${API_PATH}/settings.describe`, '192.168.100.50'),
-      member.response,
-    )
-    expect(member.state.status).not.toBe(403)
-    const secondNetwork = fakeResponse()
-    await routes[0]!.handler(
-      fakeRequest({ host: '192.168.100.5:3080' }, `${API_PATH}/credentials.describe`, '10.147.20.7'),
-      secondNetwork.response,
-    )
-    expect(secondNetwork.state.status).not.toBe(403)
-    // The declared-authority shape joins the member shape: the Host fence and
-    // the network gate are independent grants.
-    const named = fakeResponse()
-    await routes[0]!.handler(
-      fakeRequest({ host: '192.168.100.5:3080' }, `${API_PATH}/settings.describe`, '127.0.0.1'),
-      named.response,
-    )
-    expect(named.state.status).not.toBe(403)
-    await dispose()
-  })
-
-  it('keeps the privileged pin unchanged when no network is declared', async () => {
-    // The widening is opt-in only: a loopback socket presenting a non-loopback
-    // trusted Host must not ride isTrustedSource's loopback arm.
-    const { routes, dispose } = await mounted({ trustedHosts: ['192.168.100.5'] })
-    const denied = fakeResponse()
-    await routes[0]!.handler(
-      fakeRequest({ host: '192.168.100.5:3080' }, `${API_PATH}/settings.describe`, '127.0.0.1'),
-      denied.response,
-    )
-    expect(denied.state).toMatchObject({ status: 403, body: 'forbidden' })
     await dispose()
   })
 
@@ -616,24 +517,6 @@ describe('connection node half over a real HTTP server', () => {
         loopbackAuthority,
         browserCookie(connection, loopbackAuthority),
       )).toBe(404)
-    } finally {
-      await close()
-      await dispose()
-    }
-  })
-
-  it('answers a declared network source without the configuration 403, over real HTTP', async () => {
-    // Real loopback sockets carry the source address Node actually reports;
-    // with a network declared, the same declared authority that 403s above now
-    // reaches the configuration plane because the source is vouched for.
-    const { routes, dispose } = await mounted({
-      trustedHosts: ['harness.example'],
-      trustedNetworks: ['127.0.0.0/8'],
-    })
-    const { port, close } = await serve(routes)
-    try {
-      expect(await call(port, 'settings.describe', 'harness.example')).toBe(404)
-      expect(await call(port, 'credentials.describe', 'harness.example')).toBe(404)
     } finally {
       await close()
       await dispose()
