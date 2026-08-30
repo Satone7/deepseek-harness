@@ -3,7 +3,7 @@
   "private": true,
   "dependencies": {
     "@deepseek-ai/dsh-token-cost": "file:vendor/dsh-token-cost",
-    "dsh-better-sidebar": "0.15.2"
+    "dsh-better-sidebar": "0.16.1"
   },
   "dsh": {
     "profile": {

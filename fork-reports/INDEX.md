@@ -20,6 +20,14 @@ YYYY-MM-DD-upstream-<from>-to-<to>.html
 | 2026-08-24 | 0.1.1-rc.1 → 0.1.1-rc.2(35 commits,主线为图像管线统一化;同窗口含终端/预览根因修复、栅栏收口、插件 0.15.2;首次按 fork-upstream-sync SKILL 执行) | [2026-08-24-upstream-0.1.1-rc.1-to-0.1.1-rc.2.html](2026-08-24-upstream-0.1.1-rc.1-to-0.1.1-rc.2.html) |
 | 2026-08-21 | 0.1.0-rc.7 → 0.1.1-rc.1(99f6f02fec → 528c682e06,448 commits) | [2026-08-21-upstream-rc.7-to-0.1.1-rc.1.html](2026-08-21-upstream-rc.7-to-0.1.1-rc.1.html) |
 
+## 漂移检查记录(不产生同步)
+
+例行/按需的漂移检查,仅落盘结论,不执行 merge/部署。命名 `YYYY-MM-DD-drift-check.html`。
+
+| 日期 | 结论 | 报告 |
+|---|---|---|
+| 2026-08-25 | 上游零落后(rc.2 已于 08-24 合入,无新 tag/Release);插件漂移 0.15.2 → 0.16.1(0.16.0 声明支持 rc.2,含 #357 rc.x 宿主崩溃修复)——经用户确认同日开插件窗口:staging 冒烟绿 + 线上冒烟 7 层绿,0.16.1 已上线 | [2026-08-25-drift-check.html](2026-08-25-drift-check.html) |
+
 ## 维护机制文档
 
 | 日期 | 文档 |
