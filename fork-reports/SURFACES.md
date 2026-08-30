@@ -55,7 +55,7 @@
 
 ## 当前 delta 快照（生成，勿手改）
 
-统计：104 个文件（M/D 43，A 61）；已认领 M/D：95。
+统计：103 个文件（M/D 42，A 61）；已认领 M/D：96。
 
 | 状态 | 路径 | 认领 |
 |---|---|---|
@@ -137,9 +137,8 @@
 | M | `packages/client/connection/src/index.ts` | 认领:feat(web-app): settings 版本行 |
 | A | `packages/client/connection/src/web-version.d.ts` | 新增(无需认领) |
 | A | `packages/client/connection/src/web-version.ts` | 认领:feat(web-app): settings 版本行 |
-| M | `packages/client/connection/tests/http-bridge.host.spec.ts` | ⚠️ 未认领 |
 | M | `packages/client/connection/tsconfig.client.json` | 认领:feat(web-app): settings 版本行 |
-| M | `packages/client/connection/tsconfig.host.json` | ⚠️ 未认领 |
+| M | `packages/client/connection/tsconfig.host.json` | 认领:feat(web-app): settings 版本行 |
 | M | `packages/client/ui-settings-general/README.i18n.yaml` | 认领:feat(web-app): settings 版本行 |
 | M | `packages/client/ui-settings-general/README.md` | 认领:feat(web-app): settings 版本行 |
 | M | `packages/client/ui-settings-general/README.zh.md` | 认领:feat(web-app): settings 版本行 |
