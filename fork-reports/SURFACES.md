@@ -16,6 +16,7 @@
       "packages/client/connection/src/index.ts",
       "packages/client/connection/src/client/index.ts",
       "packages/client/connection/tsconfig.client.json",
+      "packages/client/connection/tsconfig.host.json",
       "packages/bundle/web-app/src/index.ts",
       "packages/client/ui-settings-general/**",
       "packages/client/ui-settings/src/client/settings-scope.ts",
@@ -54,7 +55,7 @@
 
 ## 当前 delta 快照（生成，勿手改）
 
-统计：107 个文件（M/D 47，A 60）；已认领 M/D：94。
+统计：104 个文件（M/D 43，A 61）；已认领 M/D：95。
 
 | 状态 | 路径 | 认领 |
 |---|---|---|
@@ -71,7 +72,6 @@
 | M | `AGENTS.md` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `CLAUDE.local.md` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | M | `apps/cli/composition.md` | 认领:feat(base): 默认挂载 claude-code 子代理 + 遥测默认 DISABLED |
-| M | `apps/cli/tests/built-bin.e2e.ts` | ⚠️ 未认领 |
 | M | `apps/cli/tests/web-agent-presets.e2e.ts` | 认领:feat(base): 默认挂载 claude-code 子代理 + 遥测默认 DISABLED |
 | M | `apps/web/tests/expected/settings-chrome/dialog-en.expected.md` | 认领:feat(web-app): settings 版本行 |
 | M | `apps/web/tests/expected/settings-chrome/dialog.expected.md` | 认领:feat(web-app): settings 版本行 |
@@ -134,13 +134,12 @@
 | M | `packages/bundle/web-app/tests/browser-open.spec.ts` | ⚠️ 未认领 |
 | M | `packages/bundle/web-app/tsconfig.json` | ⚠️ 未认领 |
 | M | `packages/client/connection/src/client/index.ts` | 认领:feat(web-app): settings 版本行 |
-| D | `packages/client/connection/src/client/random-uuid.ts` | ⚠️ 未认领 |
-| M | `packages/client/connection/src/http-bridge.ts` | ⚠️ 未认领 |
 | M | `packages/client/connection/src/index.ts` | 认领:feat(web-app): settings 版本行 |
+| A | `packages/client/connection/src/web-version.d.ts` | 新增(无需认领) |
 | A | `packages/client/connection/src/web-version.ts` | 认领:feat(web-app): settings 版本行 |
 | M | `packages/client/connection/tests/http-bridge.host.spec.ts` | ⚠️ 未认领 |
-| M | `packages/client/connection/tests/node-half.host.spec.ts` | ⚠️ 未认领 |
 | M | `packages/client/connection/tsconfig.client.json` | 认领:feat(web-app): settings 版本行 |
+| M | `packages/client/connection/tsconfig.host.json` | ⚠️ 未认领 |
 | M | `packages/client/ui-settings-general/README.i18n.yaml` | 认领:feat(web-app): settings 版本行 |
 | M | `packages/client/ui-settings-general/README.md` | 认领:feat(web-app): settings 版本行 |
 | M | `packages/client/ui-settings-general/README.zh.md` | 认领:feat(web-app): settings 版本行 |
@@ -150,7 +149,7 @@
 | M | `packages/client/ui-settings-general/src/client/locales.ts` | 认领:feat(web-app): settings 版本行 |
 | M | `packages/client/ui-settings-general/tests/apply.client.spec.ts` | 认领:feat(web-app): settings 版本行 |
 | M | `packages/client/ui-settings-general/tests/components.client.spec.tsx` | 认领:feat(web-app): settings 版本行 |
-| M | `packages/extensions/cordis-client-runner/src/client/slot-catalog.ts` | ⚠️ 未认领 |
+| M | `packages/extensions/cordis-client-runner/src/client/slot-catalog.ts` | 认领:feat(web-app): settings 版本行 |
 | M | `packages/preset/agent-presets/presets/cordis/agent.cordis.yml` | 认领:feat(base): 默认挂载 claude-code 子代理 + 遥测默认 DISABLED |
 | M | `packages/preset/agent-presets/presets/cordis/skills/editing-cordis-compositions/SKILL.md` | 认领:feat(base): 默认挂载 claude-code 子代理 + 遥测默认 DISABLED |
 | M | `packages/preset/agent-presets/presets/ptc/agent.cordis.yml` | 认领:feat(base): 默认挂载 claude-code 子代理 + 遥测默认 DISABLED |
@@ -164,4 +163,3 @@
 | A | `scripts/fork/plugin-stage.sh` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `scripts/fork/smoke.sh` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `scripts/fork/sync-scope.mjs` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
-| M | `scripts/verify-package-readme-limitations.ts` | ⚠️ 未认领 |

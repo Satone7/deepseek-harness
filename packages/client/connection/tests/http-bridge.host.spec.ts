@@ -12,7 +12,6 @@ describe('HTTP bridge abort', () => {
       url: '/api/session.prompt',
       method: 'POST',
       headers: { 'content-type': 'application/json', 'content-length': '999999' },
-      socket: { remoteAddress: '127.0.0.1' },
       destroy: () => { destroyed.push(true) },
     })
     let status: number | undefined
@@ -43,7 +42,6 @@ describe('HTTP bridge abort', () => {
       url: '/api/directoryPicker/pick',
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      socket: { remoteAddress: '127.0.0.1' },
     })
 
     const response = Object.assign(new EventEmitter(), {
