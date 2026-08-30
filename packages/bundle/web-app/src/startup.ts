@@ -2,7 +2,6 @@
  * The web app's command-line provider: it parses the `dsh --profile web` flag
  * family (`--host`, `--port`, `--trusted-host`, `--no-open`) and its `--help`
  * text, then provides the immutable values as {@link WEB_STARTUP_SERVICE}.
- * `--trusted-network` joins the flag family.
  * Ordinary rows inject that service before reading it from lazy config.
  * @module @deepseek-ai/dsh-web-app/startup
  */
@@ -30,8 +29,6 @@ export interface WebStartupValues {
   port?: number
   /** Explicit `--trusted-host` authorities, in argument order. */
   trustedHosts: string[]
-  /** Explicit `--trusted-network` IPv4 CIDRs, in argument order. */
-  trustedNetworks: string[]
 }
 
 /** The web flag family, as commander parsed it. */
@@ -40,7 +37,6 @@ interface WebOptions {
   open: boolean
   port?: string
   trustedHost?: string[]
-  trustedNetwork?: string[]
 }
 
 /**
@@ -52,18 +48,15 @@ function webCommand(): Command {
     .name('dsh --profile web')
     .description('Serve the DeepSeek Harness browser UI.')
     .helpOption('-h, --help', 'show this help')
-    .option('--host <host>', 'bind host; 0.0.0.0 (all interfaces) also requires --trusted-network')
+    .option('--host <host>', 'bind host')
     .option('--no-open', 'do not open the Web UI in the default browser')
     .option('--port <port>', 'listen port; pass 0 to let the OS pick a free one')
     .option('--trusted-host <authority...>', 'extra authority the /api browser-trust fence accepts (host or host:port; repeatable)')
-    .option('--trusted-network <cidr...>', 'LAN subnet whose socket sources the /api fence trusts like loopback (IPv4 CIDR; repeatable)')
     .addHelpText('after', `
 Examples:
   dsh --profile web                          serve on the composed host and port
   dsh --profile web --no-open                serve without opening a browser
   dsh --profile web --port 8080              serve on another port
-  dsh --profile web --host 0.0.0.0 --trusted-network 192.168.100.0/24 --trusted-network 10.147.20.0/24
-                                            serve the whole UI to trusted LANs
 `)
 }
 
@@ -72,17 +65,14 @@ Examples:
  * command's action publishes the flags this invocation named; `--host 0.0.0.0`
  * or a non-numeric `--port` is a usage error, so on rejection (and on `--help`)
  * nothing is provided.
- * The all-interfaces `--host 0.0.0.0` is a usage error only without a
- * declared `--trusted-network` — that bind would expose remote code execution
- * to every network that can route here.
  * @param ctx - plugin context carrying the command line.
  */
 export function apply(ctx: Context): void {
   const program = webCommand()
   program.action(() => {
     const options = program.opts<WebOptions>()
-    if (options.host === '0.0.0.0' && (options.trustedNetwork ?? []).length === 0) {
-      program.error('error: --host 0.0.0.0 requires --trusted-network: without a trusted subnet the all-interfaces bind would expose remote code execution to every network that can route here')
+    if (options.host === '0.0.0.0') {
+      program.error('error: --host 0.0.0.0 is intentionally not supported yet for safety: it would expose remote code execution to the network; use 127.0.0.1 instead')
     }
     if (options.port !== undefined && !/^\d+$/.test(options.port)) {
       program.error(`error: --port must be a number, got ${JSON.stringify(options.port)}`)
@@ -92,7 +82,6 @@ export function apply(ctx: Context): void {
       ...options.host !== undefined && { host: options.host },
       ...options.port !== undefined && { port: Number(options.port) },
       trustedHosts: options.trustedHost ?? [],
-      trustedNetworks: options.trustedNetwork ?? [],
     } satisfies WebStartupValues)
   })
   parseCmdline(ctx, program)

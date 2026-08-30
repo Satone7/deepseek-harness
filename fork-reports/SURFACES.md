@@ -10,33 +10,21 @@
 ```json
 [
   {
-    "feature": "feat(connection): LAN trusted-network fence",
-    "globs": [
-      "packages/client/connection/**",
-      "packages/bundle/web-app/**",
-      "packages/client/web/**",
-      "apps/web/tsconfig.json",
-      "apps/cli/tests/built-bin.e2e.ts",
-      "apps/cli/composition.md",
-      "apps/cli/reference/**",
-      "docs/config-catalog*",
-      "AGENTS.md"
-    ],
-    "test": "packages/client/connection/tests + packages/bundle/web-app/tests/trusted-hosts.spec.ts（栅栏正反向）；scripts/fork/smoke.sh L5/L6"
-  },
-  {
     "feature": "feat(web-app): settings 版本行",
     "globs": [
+      "packages/client/connection/src/web-version.ts",
+      "packages/client/connection/src/index.ts",
+      "packages/client/connection/src/client/index.ts",
+      "packages/client/connection/tsconfig.client.json",
+      "packages/bundle/web-app/src/index.ts",
       "packages/client/ui-settings-general/**",
       "packages/client/ui-settings/src/client/settings-scope.ts",
-      "packages/client/ui-conversation/**",
-      "packages/client/runtime/tests/**",
       "apps/web/tests/**"
     ],
-    "test": "packages/client/ui-settings-general/tests + apps/web settings-chrome goldens"
+    "test": "packages/client/ui-settings-general/tests + apps/web settings-chrome goldens；scripts/fork/smoke.sh L7（注入版本 == web-app 包版本）"
   },
   {
-    "feature": "feat(base): 默认挂载 claude-code 子代理",
+    "feature": "feat(base): 默认挂载 claude-code 子代理 + 遥测默认 DISABLED",
     "globs": [
       "packages/bundle/base/**",
       "apps/cli/config/agent-presets/**",
@@ -46,29 +34,16 @@
     "test": "packages/bundle/base/tests/base.spec.ts"
   },
   {
-    "feature": "fix(apiproxy): 非安全上下文 RPC id",
+    "feature": "deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数）",
     "globs": [
-      "packages/host/apiproxy/**",
-      "packages/util/random-uuid/**",
-      "packages/llm/llm/**",
-      "tsconfig.host.json",
-      "scripts/verify-package-readme-*.ts"
-    ],
-    "test": "packages/host/apiproxy/tests/client-handler.spec.ts"
-  },
-  {
-    "feature": "同步合并产物（目录重生成/lockfile，语义跟随上游）",
-    "globs": [
+      "deploy/**",
+      "scripts/fork/**",
       "pnpm-lock.yaml",
-      "packages/extensions/cordis-client-runner/src/client/slot-catalog.ts",
-      "docs/**",
       ".agents/notes/**",
       "fork-reports/**",
-      "scripts/fork/**",
-      "deploy/**",
       "CLAUDE.local.md"
     ],
-    "test": "check 子命令覆盖面本身；无独立运行时行为"
+    "test": "scripts/fork/smoke.sh L1-L7（L5 LAN authority 正向 / L6 伪造 Host 负向）"
   }
 ]
 ```

@@ -4,7 +4,7 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/home/pren/n/bin/dsh web --host 0.0.0.0 --trusted-network 10.147.20.0/24
+ExecStart=/home/pren/n/bin/dsh web
 WorkingDirectory=/home/pren
 Environment=NARB_DISABLE_NATIVE_CACHE=1
 Environment=PATH=/home/pren/n/bin:/usr/local/bin:/usr/bin:/bin

@@ -17,8 +17,9 @@ PKG=${1:?用法: plugin-stage.sh <包名> <版本>}
 VERSION=${2:?用法: plugin-stage.sh <包名> <版本>}
 REPO=$(cd "$(dirname "$0")/../.." && pwd)
 STAGE_ROOT=$HOME/.dsh/.plugin-stage
-FENCE_ARGS=$(grep -oE '\-\-host [^ ]+ (--trusted-network [^ ]+ ?)+' "$REPO/deploy/systemd/dsh-web.service" | head -1)
-[ -n "$FENCE_ARGS" ] || FENCE_ARGS="--host 0.0.0.0 --trusted-network 10.147.20.0/24"
+# 不向 CLI 传栅栏参数：上游 CLI 拒绝 `--host 0.0.0.0` 参数，staging profile 的
+# cordis.patch.yml 以 `ctx.webStartup.host ?? '0.0.0.0'` 兜底绑定全网卡（与生产一致），
+# LAN IPv4 字面量由此自动进入 /api 信任面。
 
 cleanup() {
   [ -n "${EPHEMERAL_PID:-}" ] && kill "$EPHEMERAL_PID" 2>/dev/null || true
@@ -40,8 +41,8 @@ fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');
   node -e "console.log('   实际装上:', require('./node_modules/' + process.argv[1] + '/package.json').version)" "$PKG"
 )
 
-echo "==> [2/4] ephemeral 实例（生产同款栅栏参数: $FENCE_ARGS）"
-DSH_HOME=$STAGE_ROOT/home /home/pren/n/bin/dsh web $FENCE_ARGS --port 0 --no-open > "$STAGE_ROOT/server.log" 2>&1 &
+echo "==> [2/4] ephemeral 实例（profile patch 兜底 0.0.0.0 绑定，与生产一致）"
+DSH_HOME=$STAGE_ROOT/home /home/pren/n/bin/dsh web --port 0 --no-open > "$STAGE_ROOT/server.log" 2>&1 &
 EPHEMERAL_PID=$!
 for i in $(seq 1 20); do
   # set -e 下 grep 无匹配会使赋值语句失败退出脚本，必须 || true 兜底

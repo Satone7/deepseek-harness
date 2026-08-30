@@ -8,8 +8,8 @@
 #   L2 插件 bundle 可服务 — /plugins/dsh-better-sidebar/client.js 与 terminal chunk 均 200
 #   L3 PTY 依赖        — POST /sidebar/api/terminal.deps → ok（node-pty 随环境腐烂会在此暴露）
 #   L4 WS+PTY 往返     — 真实 WebSocket 升级 + PTY echo 断言
-#   L5 栅栏正向        — 可信网段本机地址访问 /api 与 /sidebar 非 403
-#   L6 栅栏负向        — 非成员网段本机地址访问 /api、/sidebar、WS 必须 403/拒绝（F3 收口后 L6b/L6c 转绿）
+#   L5 栅栏正向        — LAN IP authority（bind 0.0.0.0 自动信任面）访问 /api 与 /sidebar 非 403
+#   L6 栅栏负向        — 伪造非信任 Host authority 访问 /api、/sidebar、WS 必须 403/拒绝（上游 Host/Origin 栅栏语义）
 #   L7 版本一致        — 注入的 __DSH_WEB_VERSION__ == 仓库 web-app 包版本
 set -uo pipefail
 
@@ -53,35 +53,32 @@ process.exit(0);
 " 2>&1)
 [ "$ws_result" = ok ]; layer "L4 WS+PTY echo" $? "$ws_result"
 
-# L5/L6 栅栏（连真实本机地址让 socket 来源落在对应网段；loopback 套接字本就该放行）
-# 地址可经环境变量覆盖：DSH_SMOKE_TRUSTED_ADDR（成员网段内的本机地址）/
-# DSH_SMOKE_UNTRUSTED_ADDR（不在任何 --trusted-network 的本机地址，默认 eth0）。
+# L5/L6 栅栏（上游 Host/Origin 栅栏语义：bind 0.0.0.0 时本机 LAN IPv4 字面量自动进信任面）。
+# L5 连真实本机 LAN 地址（Host 头即该 authority，落在自动信任面内）；
+# L6 向 loopback 发请求但伪造非信任 Host 头（DNS-rebinding 形态），必须被 403/拒绝。
+# 地址/主机名可经环境变量覆盖：DSH_SMOKE_TRUSTED_ADDR（本机 LAN 地址）/
+# DSH_SMOKE_UNTRUSTED_HOST（不在信任面的任意主机名）。
 TRUSTED_ADDR=${DSH_SMOKE_TRUSTED_ADDR:-10.147.20.97}
-UNTRUSTED_ADDR=${DSH_SMOKE_UNTRUSTED_ADDR:-172.29.15.156}
+UNTRUSTED_HOST=${DSH_SMOKE_UNTRUSTED_HOST:-untrusted.invalid}
+PORT=${BASE##*:}
 
-trusted_code_api=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 -X POST -d '{}' "http://$TRUSTED_ADDR:${BASE##*:}/api" 2>/dev/null)
-[ "$trusted_code_api" != 403 ]; layer "L5a 可信网段 → /api => $trusted_code_api" $? "可信来源被拒（403）——栅栏误伤成员网段 $TRUSTED_ADDR"
+trusted_code_api=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 -X POST -d '{}' "http://$TRUSTED_ADDR:$PORT/api" 2>/dev/null)
+[ "$trusted_code_api" != 403 ]; layer "L5a LAN authority → /api => $trusted_code_api" $? "可信来源被拒（403）——栅栏误伤 LAN 地址 $TRUSTED_ADDR"
 
-trusted_code_sb=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 -X POST "http://$TRUSTED_ADDR:${BASE##*:}/sidebar/api/terminal.deps" 2>/dev/null)
-[ "$trusted_code_sb" != 403 ]; layer "L5b 可信网段 → /sidebar => $trusted_code_sb" $? "插件路由误伤可信来源 $TRUSTED_ADDR"
+trusted_code_sb=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 -X POST "http://$TRUSTED_ADDR:$PORT/sidebar/api/terminal.deps" 2>/dev/null)
+[ "$trusted_code_sb" != 403 ]; layer "L5b LAN authority → /sidebar => $trusted_code_sb" $? "插件路由误伤可信来源 $TRUSTED_ADDR"
 
-untrusted_code_api=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 -X POST -d '{}' "http://$UNTRUSTED_ADDR:${BASE##*:}/api" 2>/dev/null)
-[ "$untrusted_code_api" = 403 ]; layer "L6a 非成员网段 → /api => $untrusted_code_api" $? "期待 403（$UNTRUSTED_ADDR 被 /api 放行说明 socket 栅栏失效）"
+untrusted_code_api=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 -X POST -d '{}' -H "Host: $UNTRUSTED_HOST:$PORT" "$BASE/api" 2>/dev/null)
+[ "$untrusted_code_api" = 403 ]; layer "L6a 伪造 Host → /api => $untrusted_code_api" $? "期待 403（$UNTRUSTED_HOST 被 /api 放行说明 Host 栅栏失效）"
 
-untrusted_code_sb=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 -X POST "http://$UNTRUSTED_ADDR:${BASE##*:}/sidebar/api/terminal.deps" 2>/dev/null)
-[ "$untrusted_code_sb" = 403 ]; layer "L6b 非成员网段 → /sidebar => $untrusted_code_sb" $? "期待 403——F3 绕过：插件路由未过来源栅栏（B2 收口后此层转绿），当前 $UNTRUSTED_ADDR 可达插件路由"
+untrusted_code_sb=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 -X POST -H "Host: $UNTRUSTED_HOST:$PORT" "$BASE/sidebar/api/terminal.deps" 2>/dev/null)
+[ "$untrusted_code_sb" = 403 ]; layer "L6b 伪造 Host → /sidebar => $untrusted_code_sb" $? "期待 403——插件路由未过 Host 栅栏，当前 $UNTRUSTED_HOST 可达插件路由"
 
-ws_untrusted=$(node --input-type=module -e "
-const ws = new WebSocket('ws://$UNTRUSTED_ADDR:${BASE##*:}/sidebar/ws/terminal');
-const done = new Promise((resolve) => {
-  const t = setTimeout(() => resolve('timeout'), 4000);
-  ws.onopen = () => { clearTimeout(t); resolve('opened：非成员网段 WS 升级被放行'); };
-  ws.onerror = () => { clearTimeout(t); resolve('rejected'); };
-  ws.onclose = () => { clearTimeout(t); resolve('rejected'); };
-});
-console.log(await done);
-" 2>&1)
-[ "$ws_untrusted" = rejected ]; layer "L6c 非成员网段 → WS upgrade" $? "$ws_untrusted（B2 收口后此层转绿）"
+ws_code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 -H "Host: $UNTRUSTED_HOST:$PORT" \
+  -H 'Connection: Upgrade' -H 'Upgrade: websocket' \
+  -H 'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==' -H 'Sec-WebSocket-Version: 13' \
+  "$BASE/sidebar/ws/terminal?sessionId=smoke-probe&tab=smoke" 2>/dev/null)
+[ "$ws_code" != 101 ]; layer "L6c 伪造 Host → WS upgrade => $ws_code" $? "期待非 101（$UNTRUSTED_HOST 的 WS 升级被放行说明 Host 栅栏失效）"
 
 # L7 版本一致
 injected=$(curl -s --max-time 5 "$BASE/" 2>/dev/null | grep -oE '__DSH_WEB_VERSION__ = "[^"]*"' | head -1 | cut -d'"' -f2)
