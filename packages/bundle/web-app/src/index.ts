@@ -5,32 +5,28 @@
  * the built frontend dist (workspace knowledge of this bundle, never user
  * config), mounts the `frontend-static` fallback owner over it, registers the
  * harness-source and web-surface prompt sections, the bash-visible web runtime
- * variable, the URL line, and the default-browser handoff. App command-line
- * values arrive through the `webStartup` service expressions in the bundle
- * patch.
+ * variable, the process-token URL line, and the default-browser handoff. The
+ * model and shell retain the clean URL. App command-line values arrive through
+ * the `webStartup` service expressions in the bundle patch.
  * @module @deepseek-ai/dsh-web-app
  */
 
 import { spawn, type ChildProcess } from 'node:child_process'
-import { createRequire } from 'node:module'
 import { readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import { dirname, join } from 'node:path'
 import { networkInterfaces } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { addHarnessSourceSection } from '@deepseek-ai/dsh-app-boot'
-import {
-  isTrustedSource,
-  parseTrustedNetwork,
-  WEB_TRUST_GLOBAL,
-  WEB_VERSION_GLOBAL,
-} from '@deepseek-ai/dsh-client-connection'
+import { WEB_VERSION_GLOBAL } from '@deepseek-ai/dsh-client-connection'
 import * as FrontendStatic from '@deepseek-ai/dsh-host-frontend-static'
 import { launchEnvironmentOf } from '@deepseek-ai/dsh-launch-environment'
 import { scrubbedParentEnv } from '@deepseek-ai/dsh-subprocess'
 import type {} from '@deepseek-ai/cordis-plugin-loader'
 import type {} from '@deepseek-ai/dsh-host-webserver'
-import type {} from '@deepseek-ai/dsh-system-prompt'
+import { FIRST_PARTY_SECTION_ORDER } from '@deepseek-ai/dsh-system-prompt'
 import type {} from '@deepseek-ai/dsh-shell-env'
 
 /** Stable Cordis plugin name. */
@@ -38,6 +34,7 @@ export const name = 'web-app'
 
 /** This dsh installation's root, from either this package's source or built entry. */
 const SOURCE_ROOT = fileURLToPath(new URL('../../../..', import.meta.url))
+const ANNOUNCED_ROOTS = new WeakSet<Context>()
 
 /** Runtime service that releases Web rows after bind-dependent values resolve. */
 const WEB_RUNTIME_SERVICE = 'webRuntime'
@@ -60,8 +57,6 @@ export interface Config {
   surfaceContext: boolean
   /** Explicit `--trusted-host` authorities from this invocation. */
   trustedHosts: string[]
-  /** Explicit `--trusted-network` IPv4 CIDRs from this invocation, passed to the fence verbatim. */
-  trustedNetworks: string[]
 }
 
 export const Config: z<Config> = z.object({
@@ -69,7 +64,6 @@ export const Config: z<Config> = z.object({
   printUrl: z.boolean().default(true),
   surfaceContext: z.boolean().default(true),
   trustedHosts: z.array(String).default([]),
-  trustedNetworks: z.array(String).default([]),
 })
 
 /** Bind-dependent Web values shared by the trust fence and URL display. */
@@ -78,8 +72,6 @@ export interface WebRuntimeValues {
   lanAddresses: string[]
   /** LAN literals followed by explicit invocation authorities. */
   trustedHosts: string[]
-  /** Declared trusted-network CIDRs, verbatim; no network is ever derived. */
-  trustedNetworks: string[]
 }
 
 /** Environment variable naming the canonical local URL of this Web GUI. */
@@ -137,61 +129,17 @@ try {
  * Derived entries are port-less IP literals: DNS rebinding needs an
  * attacker-controlled name, while an IP-literal Host is safe on any port and
  * an OS-assigned port is unknowable before bind.
- * Trusted networks ride through verbatim — deriving a machine interface's
- * containing subnet would guess the operator's network plan — and, when any
- * are declared, they also constrain the derived LAN addresses to member
- * interfaces: every consumer of `trustedHosts` (the `/api` header fence, the
- * browser trust injection, and any plugin that Host-checks its own routes)
- * then refuses non-member interface authorities on an all-interfaces bind.
- * With no networks declared the derived set keeps every interface, matching
- * the loopback deployment's vacuous network gate.
  * @param bindHost - the active webserver bind host.
  * @param extra - explicit `--trusted-host` values, in argument order.
- * @param networks - explicit `--trusted-network` CIDRs, in argument order.
  * @returns the LAN display addresses and invocation-derived fence authorities.
  */
-export function resolveLanTrust(
-  bindHost: string,
-  extra: readonly string[],
-  networks: readonly string[],
-): WebRuntimeValues {
-  const parsedNetworks = networks.map(parseTrustedNetwork)
+export function resolveLanTrust(bindHost: string, extra: readonly string[]): WebRuntimeValues {
   const lanAddresses = bindHost === ALL_INTERFACES_HOST
     ? Object.values(networkInterfaces()).flat()
       .filter((iface): iface is NonNullable<typeof iface> => iface !== undefined && iface.family === 'IPv4' && !iface.internal)
       .map(iface => iface.address)
-      .filter(address => parsedNetworks.length === 0 || isTrustedSource(address, parsedNetworks))
     : []
-  return { lanAddresses, trustedHosts: [...lanAddresses, ...extra], trustedNetworks: [...networks] }
-}
-
-/** The serving dsh release version, read from this bundle's checked-in package.json. */
-function productVersion(): string {
-  const manifest = JSON.parse(
-    readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8'),
-  ) as { version?: unknown }
-  /* v8 ignore next -- every install face ships package.json with a version. */
-  return typeof manifest.version === 'string' ? manifest.version : '0.0.0'
-}
-
-/** Splice one inline script immediately after the page's `<head>` open tag. */
-function injectHeadScript(html: string, script: string): string {
-  const head = html.indexOf('<head>')
-  if (head !== -1) return `${html.slice(0, head + 6)}${script}${html.slice(head + 6)}`
-  return `${script}${html}`
-}
-
-/** Build the inline script that exposes the LAN trust fence to the browser client. */
-function injectWebTrust(html: string, runtime: WebRuntimeValues): string {
-  return injectHeadScript(html, `<script>window.${WEB_TRUST_GLOBAL} = ${JSON.stringify({
-    trustedHosts: runtime.trustedHosts,
-    trustedNetworks: runtime.trustedNetworks,
-  })}</script>`)
-}
-
-/** Build the inline script that exposes the serving product version to the browser client. */
-function injectWebVersion(html: string, version: string): string {
-  return injectHeadScript(html, `<script>window.${WEB_VERSION_GLOBAL} = ${JSON.stringify(version)}</script>`)
+  return { lanAddresses, trustedHosts: [...lanAddresses, ...extra] }
 }
 
 /** Model-visible orientation and acceptance boundary for sessions created through `dsh web`. */
@@ -215,15 +163,30 @@ function localWebUrl(ctx: Context): string {
   return `http://${LOOPBACK_HOST}:${String(port)}`
 }
 
-/** Dist location is workspace knowledge of this bundle: resolved through the frontend package exports, not configured. */
+/**
+ * Dist location is workspace knowledge of this bundle: anchored on the
+ * frontend package manifest, not configured. Existence is a request-time
+ * concern — the fallback owner reads files per request, so a composition
+ * whose page never reaches the fallback seat (the static worker preview
+ * ships its own page and carries no dist) boots without one.
+ */
 function resolveDistIndex(): string {
   const require = createRequire(import.meta.url)
   try {
-    return require.resolve('@deepseek-ai/dsh-web-frontend/dist/index.html')
+    return join(dirname(require.resolve('@deepseek-ai/dsh-web-frontend/package.json')), 'dist', 'index.html')
   } catch {
-    /* v8 ignore next 2 -- reachable only on a checkout without a built dist; the test tree builds it */
-    throw new Error('web-app: frontend dist not built; run pnpm run build from the repository root first')
+    /* v8 ignore next 2 -- reachable only when the frontend package is absent from the checkout */
+    throw new Error('web-app: @deepseek-ai/dsh-web-frontend is not resolvable from this composition')
   }
+}
+
+/** The serving dsh release version, read from this bundle's checked-in package.json. */
+function productVersion(): string {
+  const manifest = JSON.parse(
+    readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8'),
+  ) as { version?: unknown }
+  /* v8 ignore next -- every install face ships package.json with a version. */
+  return typeof manifest.version === 'string' ? manifest.version : '0.0.0'
 }
 
 /** Start the maintained platform opener without forwarding Harness credentials. */
@@ -280,28 +243,24 @@ export const internals: {
  * @param config - validated {@link Config}.
  */
 export function apply(ctx: Context, config: Config): void {
-  const runtime = resolveLanTrust(ctx.webServer.host, config.trustedHosts, config.trustedNetworks)
+  const runtime = resolveLanTrust(ctx.webServer.host, config.trustedHosts)
   // The loopback URL belongs to this host. Under SSH, the operator reaches it
   // through a local forwarding address that this process cannot derive.
   const handoffBrowser = config.openBrowser && !launchedThroughSsh(ctx)
   // Release dependent rows only after bind-dependent trust has been sampled once.
   ctx.provide(WEB_RUNTIME_SERVICE, runtime)
   // The browser connection client does not receive host-row config through the
-  // module graph, so expose the trust fence and the serving product version
-  // explicitly for it to mirror.
-  ctx.effect(
-    () => ctx.webServer.tapIndex(
-      html => injectWebVersion(injectWebTrust(html, runtime), productVersion()),
-    ),
-    'web-app: page bootstrap globals',
-  )
+  // module graph, so expose the serving product version explicitly for it to mirror.
+  ctx.on('webserver/index-inject', (table) => {
+    table.push({ kind: 'global', name: WEB_VERSION_GLOBAL, value: productVersion() })
+  })
   ctx.plugin(FrontendStatic, { distIndex: internals.resolveDistIndex() })
   if (config.surfaceContext) {
     ctx.inject(['systemPrompt'], (promptCtx) => {
       addHarnessSourceSection(promptCtx, SOURCE_ROOT)
       promptCtx.systemPrompt.section({
         name: 'app:web-surface',
-        order: -98,
+        order: FIRST_PARTY_SECTION_ORDER.WEB_SURFACE,
         text: () => webSurfacePrompt(localWebUrl(promptCtx)),
       })
     })
@@ -316,41 +275,50 @@ export function apply(ctx: Context, config: Config): void {
     })
   }
   if (config.printUrl || handoffBrowser) {
-    // The URL line and browser handoff are readiness signals: supervisors RPC
-    // as soon as they observe the line, while a browser requests the page as
-    // soon as it opens. Neither may run while sibling rows such as the /api
-    // route owner are still mounting. Await Loader settlement first; a
-    // hand-built tree without a Loader is already the complete tree.
-    const announceReady = (): void => {
-      const webUrl = localWebUrl(ctx)
-      // Reuse the exact LAN snapshot provided to the /api trust fence.
-      const lanCandidate = runtime.lanAddresses[0]
-      const port = ctx.webServer.port
-      if (config.printUrl) {
-        console.log(`dsh web: ${webUrl}${lanCandidate === undefined ? '' : ` (LAN: http://${lanCandidate}:${String(port)})`}`)
+    ctx.inject(['connection'], (connectionCtx) => {
+      // The URL line and browser handoff are readiness signals: supervisors RPC
+      // as soon as they observe the line, while a browser requests the page as
+      // soon as it opens. Neither may run while sibling rows such as the /api
+      // route owner are still mounting. Await Loader settlement first; a
+      // hand-built tree without a Loader is already the complete tree.
+      const announceReady = (): void => {
+        if (ANNOUNCED_ROOTS.has(connectionCtx.root)) return
+        const webUrl = localWebUrl(connectionCtx)
+        const authenticatedUrl = connectionCtx.connection.authenticatedUrl(webUrl)
+        // Reuse the exact LAN snapshot provided to the /api trust fence.
+        const lanCandidate = runtime.lanAddresses[0]
+        const port = connectionCtx.webServer.port
+        const lanUrl = lanCandidate === undefined
+          ? undefined
+          : connectionCtx.connection.authenticatedUrl(`http://${lanCandidate}:${String(port)}`)
+        ANNOUNCED_ROOTS.add(connectionCtx.root)
+        if (config.printUrl) {
+          console.log(`dsh web: ${authenticatedUrl}${lanUrl === undefined ? '' : ` (LAN: ${lanUrl})`}`)
+        }
+        if (handoffBrowser) {
+          console.log('dsh web: opening the default browser; pass --no-open to disable')
+          void internals.openBrowser(authenticatedUrl).catch((error: unknown) => {
+            const reason = error instanceof Error ? error.message : String(error)
+            console.error(`web-app: could not open the default browser because ${reason}; use the dsh web URL printed at startup`)
+          })
+        }
       }
-      if (handoffBrowser) {
-        console.log('dsh web: opening the default browser; pass --no-open to disable')
-        void internals.openBrowser(webUrl).catch((error: unknown) => {
-          const reason = error instanceof Error ? error.message : String(error)
-          console.error(`web-app: could not open the default browser because ${reason}; visit ${webUrl} manually`)
-        })
+      // This row's own activation can precede a sibling failure. The app owns
+      // readiness by waiting for its Loader tree, or announces at once in a
+      // hand-built tree without Loader.
+      const settled = connectionCtx.get('loader')?.await()
+      if (settled === undefined) announceReady()
+      else {
+        void settled.then(() => {
+          // The tree can be disposed while the boot was in flight (early
+          // SIGTERM); a URL line or browser tab for a dead server would only
+          // mislead, and reading torn-down services would turn a clean shutdown
+          // into a crash.
+          if (connectionCtx.get('webServer') !== undefined
+            && connectionCtx.get('connection') !== undefined) announceReady()
+        // Loader reports a failed boot; this row only stays quiet.
+        }, () => {})
       }
-    }
-    // This row's own activation can precede a sibling failure. The app owns
-    // readiness by waiting for its Loader tree, or announces at once in a
-    // hand-built context without Loader.
-    const settled = ctx.get('loader')?.await()
-    if (settled === undefined) announceReady()
-    else {
-      void settled.then(() => {
-        // The tree can be disposed while the boot was in flight (early
-        // SIGTERM); a URL line or browser tab for a dead server would only
-        // mislead, and reading the torn-down port would turn a clean shutdown
-        // into a crash.
-        if (ctx.get('webServer') !== undefined) announceReady()
-      // Loader reports a failed boot; this row only stays quiet.
-      }, () => {})
-    }
+    })
   }
 }

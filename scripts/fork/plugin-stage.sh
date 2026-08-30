@@ -17,8 +17,9 @@ PKG=${1:?用法: plugin-stage.sh <包名> <版本>}
 VERSION=${2:?用法: plugin-stage.sh <包名> <版本>}
 REPO=$(cd "$(dirname "$0")/../.." && pwd)
 STAGE_ROOT=$HOME/.dsh/.plugin-stage
-FENCE_ARGS=$(grep -oE '\-\-host [^ ]+ (--trusted-network [^ ]+ ?)+' "$REPO/deploy/systemd/dsh-web.service" | head -1)
-[ -n "$FENCE_ARGS" ] || FENCE_ARGS="--host 0.0.0.0 --trusted-network 10.147.20.0/24"
+# 不向 CLI 传栅栏参数：上游 CLI 拒绝 `--host 0.0.0.0` 参数，staging profile 的
+# cordis.patch.yml 以 `ctx.webStartup.host ?? '0.0.0.0'` 兜底绑定全网卡（与生产一致），
+# LAN IPv4 字面量由此自动进入 /api 信任面。
 
 cleanup() {
   [ -n "${EPHEMERAL_PID:-}" ] && kill "$EPHEMERAL_PID" 2>/dev/null || true
@@ -40,8 +41,8 @@ fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');
   node -e "console.log('   实际装上:', require('./node_modules/' + process.argv[1] + '/package.json').version)" "$PKG"
 )
 
-echo "==> [2/4] ephemeral 实例（生产同款栅栏参数: $FENCE_ARGS）"
-DSH_HOME=$STAGE_ROOT/home /home/pren/n/bin/dsh web $FENCE_ARGS --port 0 --no-open > "$STAGE_ROOT/server.log" 2>&1 &
+echo "==> [2/4] ephemeral 实例（profile patch 兜底 0.0.0.0 绑定，与生产一致）"
+DSH_HOME=$STAGE_ROOT/home /home/pren/n/bin/dsh web --port 0 --no-open > "$STAGE_ROOT/server.log" 2>&1 &
 EPHEMERAL_PID=$!
 for i in $(seq 1 20); do
   # set -e 下 grep 无匹配会使赋值语句失败退出脚本，必须 || true 兜底
@@ -52,13 +53,18 @@ done
 [ -n "${PORT:-}" ] || { echo "!! 实例未就绪："; cat "$STAGE_ROOT/server.log"; exit 1; }
 echo "    http://127.0.0.1:$PORT"
 
+# 上游 0.1.2-alpha.1 起，页面/会话走一次性 token → cookie；从启动日志提取
+# token URL 供 smoke 与 browser-probe 完成鉴权交换（token 含 '-'，字符类勿漏）。
+TOKEN_URL=$(grep -oE 'http://127\.0\.0\.1:[0-9]+/\?token=[A-Za-z0-9_-]+' "$STAGE_ROOT/server.log" | head -1)
+[ -n "$TOKEN_URL" ] || { echo "!! 未在 server.log 找到 token URL"; cat "$STAGE_ROOT/server.log"; exit 1; }
+
 echo "==> [3/4] smoke.sh"
 SMOKE_RC=0
-bash "$REPO/scripts/fork/smoke.sh" "http://127.0.0.1:$PORT" || SMOKE_RC=$?
+DSH_SMOKE_TOKEN_URL="$TOKEN_URL" bash "$REPO/scripts/fork/smoke.sh" "http://127.0.0.1:$PORT" || SMOKE_RC=$?
 
 echo "==> [4/4] browser-probe（--strict）"
 PROBE_RC=0
-node "$REPO/scripts/fork/browser-probe.mjs" --url "http://127.0.0.1:$PORT" --out "$STAGE_ROOT/probe" --strict || PROBE_RC=$?
+node "$REPO/scripts/fork/browser-probe.mjs" --url "http://127.0.0.1:$PORT" --token-url "$TOKEN_URL" --out "$STAGE_ROOT/probe" --strict || PROBE_RC=$?
 PROBE_JSON="$STAGE_ROOT/probe/probe.json"
 [ -f "$PROBE_JSON" ] && node -e "
 const r = require('$PROBE_JSON');

@@ -18,9 +18,6 @@
       "path": "../../util/brand"
     },
     {
-      "path": "../../util/random-uuid"
-    },
-    {
       "path": "../../attachment/attachment"
     },
     {
@@ -28,6 +25,12 @@
     },
     {
       "path": "../../util/timeout"
+    },
+    {
+      "path": "../../util/crypto"
+    },
+    {
+      "path": "../../typert/protocol"
     }
   ]
 }

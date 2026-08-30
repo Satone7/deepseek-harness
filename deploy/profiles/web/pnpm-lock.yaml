@@ -12,8 +12,8 @@ importers:
         specifier: file:vendor/dsh-token-cost
         version: file:vendor/dsh-token-cost
       dsh-better-sidebar:
-        specifier: 0.16.1
-        version: 0.16.1
+        specifier: 0.17.1
+        version: 0.17.1
 
 packages:
 
@@ -463,14 +463,13 @@ packages:
   dompurify@3.4.14:
     resolution: {integrity: sha512-dVoH9z+MY+C9IilgGCk3YfFqjLi3fChm2OiKJMzh6axrJ5qwxqWaZamgmHrpv22CN/KdbZJuGEGgfQoL00LTdg==}
 
-  dsh-better-sidebar@0.16.1:
-    resolution: {integrity: sha512-fjFNzfrgdIbzlcC4Sd4aS1I2ZRbuA+/m3XQnOxY13jE6IKJzwz0+GjATcKTyFoLnXoDRp2QJz/U0GxhaOD70Dw==}
+  dsh-better-sidebar@0.17.1:
+    resolution: {integrity: sha512-7me2X6w+ecbzAMEHtuWkSPUrfLDLTBvL9qugzgBbg1FyWyy2dzS9QNDvnZjjkst4kr4LjUJTTG4rsXBcz41YzQ==}
     engines: {node: '>=20'}
     peerDependencies:
       '@deepseek-ai/cordis': ^4.0.1
       '@deepseek-ai/dsh-agent': ^0.1.0-rc.8
       '@deepseek-ai/dsh-client-locale': ^0.1.0-rc.8
-      '@deepseek-ai/dsh-client-runtime': ^0.1.0-rc.8
       '@deepseek-ai/dsh-client-ui-conversation': ^0.1.0-rc.8
       '@deepseek-ai/dsh-client-ui-primitives': ^0.1.0-rc.8
       '@deepseek-ai/dsh-client-ui-settings': ^0.1.0-rc.8
@@ -1247,7 +1246,7 @@ snapshots:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
-  dsh-better-sidebar@0.16.1:
+  dsh-better-sidebar@0.17.1:
     dependencies:
       '@codemirror/commands': 6.11.0
       '@codemirror/lang-cpp': 6.0.3

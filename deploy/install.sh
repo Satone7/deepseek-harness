@@ -63,7 +63,11 @@ if [ "${1:-}" = --skip-smoke ]; then
 fi
 
 echo "==> [4/4] 冒烟门禁"
-if ! bash "$REPO/scripts/fork/smoke.sh" http://127.0.0.1:3080; then
+# 上游 0.1.2-alpha.1 起页面/会话走一次性 token → cookie；systemd 场景从
+# 服务 journal 提取本次启动打印的 token URL（token 为 base64url，含 - 与 _）。
+TOKEN_URL=$(journalctl --user -u dsh-web --since '-2 min' --no-pager 2>/dev/null \
+  | grep -oE 'http://127\.0\.0\.1:3080/\?token=[A-Za-z0-9_-]+' | tail -1)
+if ! DSH_SMOKE_TOKEN_URL="$TOKEN_URL" bash "$REPO/scripts/fork/smoke.sh" http://127.0.0.1:3080; then
   rollback
 fi
 echo "install.sh: 部署完成，冒烟全绿"

@@ -12,7 +12,6 @@ describe('HTTP bridge abort', () => {
       url: '/api/session.prompt',
       method: 'POST',
       headers: { 'content-type': 'application/json', 'content-length': '999999' },
-      socket: { remoteAddress: '127.0.0.1' },
       destroy: () => { destroyed.push(true) },
     })
     let status: number | undefined
@@ -36,14 +35,13 @@ describe('HTTP bridge abort', () => {
 
   it('aborts a pending native picker request when the browser disconnects', async () => {
     const body = JSON.stringify({
-      type: 'client-request', rpcId: 'picker-1', method: 'host.pickDirectory', payload: {},
+      type: 'client-request', rpcId: 'picker-1', method: 'directoryPicker/pick', payload: { args: {} },
     })
     const request = Readable.from([Buffer.from(body)]) as unknown as IncomingMessage
     Object.assign(request, {
-      url: '/api/host.pickDirectory',
+      url: '/api/directoryPicker/pick',
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      socket: { remoteAddress: '127.0.0.1' },
     })
 
     const response = Object.assign(new EventEmitter(), {
