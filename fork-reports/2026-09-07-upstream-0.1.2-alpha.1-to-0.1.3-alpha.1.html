@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>上游同步审计：dsh-v0.1.2-alpha.1 → dsh-v0.1.3-alpha.1（2026-09-07）</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   HTML Report Style — Design System v3
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  color-scheme: light;
+  --bg: #f5f7fa;
+  --panel: #ffffff;
+  --ink: #17212f;
+  --muted: #5c6b7a;
+  --line: #d8e0ea;
+  --soft: #eef4fb;
+  --accent: #0b6fcb;
+  --accent-ink: #074d8d;
+  --accent-soft: rgba(11, 111, 203, 0.14);
+  --ok: #176b4d;
+  --ok-bg: #e8f6ef;
+  --warn: #9a5b00;
+  --warn-bg: #fff4db;
+  --risk: #b42318;
+  --risk-bg: #ffeceb;
+  --code-bg: #eef1f5;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+    "Liberation Mono", monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Noto Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+img, svg, video { max-width: 100%; height: auto; }
+::selection { background: #bcd9f7; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+header {
+  padding: 42px 24px 34px;
+  background: #132238;
+  color: #fff;
+  border-bottom: 5px solid var(--accent);
+}
+header h1 {
+  max-width: 980px;
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 760;
+  line-height: 1.25;
+}
+header .lede {
+  max-width: 980px;
+  margin-top: 12px;
+  color: #c3d2e5;
+  font-size: clamp(15px, 2vw, 17px);
+  line-height: 1.55;
+}
+.meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.meta span {
+  display: inline-flex; align-items: center;
+  min-height: 28px; padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 14px; white-space: nowrap;
+}
+main { max-width: 1180px; margin: 0 auto; padding: 28px 24px 56px; }
+.summary, .toc, section {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+.summary { padding: 22px; margin-bottom: 20px; }
+.toc     { padding: 18px 22px; }
+section  { padding: 24px; margin-top: 20px; transition: border-color .25s, box-shadow .25s; }
+section[id], h2[id], h3[id], h4[id] { scroll-margin-top: 14px; }
+section:target { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+h1, h2, h3 { line-height: 1.25; }
+h1 { margin: 0; }
+h2 { margin-top: 34px; padding-bottom: 8px; border-bottom: 1px solid var(--line); font-size: 24px; }
+h3 { margin-top: 24px; font-size: 18px; }
+h4 { margin-top: 18px; font-size: 16px; font-weight: 650; }
+section h2:first-child { margin-top: 0; }
+.summary > h2:first-child { margin-top: 0; padding-bottom: 0; border-bottom: 0; font-size: 20px; }
+p { margin: 12px 0; }
+ul, ol { padding-left: 22px; }
+li { margin: 6px 0; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+blockquote {
+  margin: 16px 0; padding: 10px 16px;
+  border-left: 3px solid var(--line);
+  border-radius: 0 6px 6px 0;
+  background: #fbfcfe; color: #37485c;
+}
+blockquote p { margin: 6px 0; }
+code {
+  padding: 2px 5px; border-radius: 4px;
+  background: var(--code-bg);
+  font-family: var(--mono); font-size: 0.92em;
+}
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: 0.9rem; line-height: 1.55;
+  white-space: pre; font-family: var(--mono);
+}
+pre code { padding: 0; background: none; border-radius: 0; font-size: inherit; }
+pre[data-file] { position: relative; padding-top: 36px; }
+pre[data-file]::before {
+  content: attr(data-file);
+  position: absolute; top: 0; left: 0; right: 0;
+  padding: 6px 16px;
+  border-bottom: 1px solid var(--line);
+  border-radius: 6px 6px 0 0;
+  background: #e4e9f0; color: var(--muted);
+  font-family: var(--mono); font-size: 0.78rem;
+}
+.diff-add, .diff-del { display: block; margin: 0 -4px; padding: 0 4px; border-left: 3px solid transparent; }
+.diff-add { background: var(--ok-bg); border-left-color: var(--ok); }
+.diff-del { background: var(--risk-bg); border-left-color: var(--risk); }
+kbd {
+  display: inline-block; padding: 1px 6px;
+  border: 1px solid var(--line); border-bottom-width: 2px;
+  border-radius: 5px; background: #fff;
+  font-family: var(--mono); font-size: 0.85em; line-height: 1.4; white-space: nowrap;
+}
+.tbl-wrap { margin: 16px 0; overflow-x: auto; }
+.tbl-wrap table { margin: 0; }
+table { width: 100%; border-collapse: collapse; margin: 16px 0; font-variant-numeric: tabular-nums; }
+caption {
+  caption-side: top; padding-bottom: 8px;
+  color: var(--muted); font-size: 0.9rem; font-weight: 600; text-align: left;
+}
+th, td { padding: 10px 12px; border: 1px solid var(--line); vertical-align: top; text-align: left; }
+thead th {
+  position: sticky; top: 0; z-index: 1;
+  background: #eef4fb; color: #1d334d; font-weight: 750;
+}
+td code { overflow-wrap: anywhere; }
+tr.highlight { background: #fef3c7; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.dense { font-size: 0.88rem; }
+table.dense th, table.dense td { padding: 7px 9px; }
+table.zebra tbody tr:nth-child(even) { background: #f7fafd; }
+.toc h2 { margin-top: 0; padding-bottom: 0; border-bottom: 0; font-size: 20px; }
+.toc ol { columns: 2; margin: 12px 0 0; padding-left: 24px; }
+.kv { margin: 16px 0; border-top: 1px solid var(--line); }
+.kv > div {
+  display: grid; grid-template-columns: 200px minmax(0, 1fr);
+  gap: 2px 16px; padding: 8px 2px; border-bottom: 1px solid var(--line);
+}
+.kv dt { color: var(--muted); font-size: 0.92rem; font-weight: 600; word-break: break-word; }
+.kv dd { min-width: 0; }
+.stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px; margin: 16px 0;
+}
+.stat {
+  padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: 8px; background: #fbfcfe;
+}
+.stat b {
+  display: block; color: var(--accent-ink);
+  font-size: 26px; line-height: 1.2; letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.stat span { display: block; margin-top: 4px; color: var(--muted); font-size: 0.86rem; }
+.stat.ok b { color: var(--ok); }
+.stat.warn b { color: var(--warn); }
+.stat.risk b { color: var(--risk); }
+.badge {
+  display: inline-flex; align-items: center;
+  min-height: 24px; padding: 2px 8px; border-radius: 999px;
+  font-size: 13px; font-weight: 700; white-space: nowrap;
+}
+.ok.b, .badge.ok { background: var(--ok-bg); color: var(--ok); }
+.badge.warn { background: var(--warn-bg); color: var(--warn); }
+.badge.risk { background: var(--risk-bg); color: var(--risk); }
+.badge.info { background: var(--soft); color: var(--accent-ink); }
+.callout {
+  margin: 16px 0; padding: 14px 16px;
+  border-left: 4px solid var(--accent);
+  border-radius: 6px; background: var(--soft);
+}
+.callout.warn { border-left-color: var(--warn); background: var(--warn-bg); }
+.callout.risk { border-left-color: var(--risk); background: var(--risk-bg); }
+.callout.ok { border-left-color: var(--ok); background: var(--ok-bg); }
+details {
+  margin: 16px 0; padding: 12px 16px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--panel);
+}
+summary { cursor: pointer; color: var(--accent-ink); font-weight: 650; }
+summary::marker { color: var(--muted); }
+details[open] summary { margin-bottom: 8px; }
+details > :last-child { margin-bottom: 0; }
+.highlight, mark { background: #fef08a; padding: 0 0.15rem; border-radius: 2px; }
+.note { color: var(--muted); font-size: 0.9rem; }
+hr { margin: 1.75rem 0; border: none; border-top: 1px solid var(--line); }
+@media (max-width: 900px) {
+  header { padding: 24px 16px 20px; }
+  main { padding: 16px 12px 32px; }
+  .toc ol { columns: 1; }
+  .kv > div { grid-template-columns: 1fr; }
+  table { display: block; overflow-x: auto; }
+}
+@media print {
+  body { background: #fff; font-size: 11.5pt; }
+  header { padding: 0 0 14pt; background: none; color: #000; border-bottom: 2pt solid #000; }
+  header .lede { color: #333; }
+  .meta span { border-color: #aaa; background: none; color: #333; }
+  main { max-width: none; padding: 0; }
+  .summary, .toc, section { box-shadow: none; border-color: #bbb; }
+  section { margin-top: 14pt; }
+  h2, h3, h4 { break-after: avoid; }
+  .callout, pre, blockquote, tr, details, .kv > div { break-inside: avoid; }
+  thead { display: table-header-group; }
+  table { display: table; }
+  pre { white-space: pre-wrap; word-break: break-word; }
+  .tbl-wrap { overflow-x: visible; }
+  a { color: #000; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>上游同步审计：dsh-v0.1.2-alpha.1 → dsh-v0.1.3-alpha.1</h1>
+  <p class="lede">984 个上游提交全量追平（含 upstream/master）；6 处冲突并集决议；fork vendored dsh-token-cost 移植至 0.1.3 settings API；dsh-better-sidebar 升级 0.18.0；SESSION 格式 v0→v2 部署前归档；线上部署 7 层冒烟全绿。</p>
+  <div class="meta">
+    <span>📅 2026-09-07</span>
+    <span>窗口：dsh-v0.1.2-alpha.1 → dsh-v0.1.3-alpha.1</span>
+    <span>master：daab4183f3</span>
+    <span>部署：<b style="color:#7ee2a8">已上线（冒烟全绿）</b></span>
+  </div>
+</header>
+
+<main>
+
+<div class="summary">
+  <h2>摘要</h2>
+  <p>本次是 fork 史上规模最大的同步窗口：目标 tag 由用户确认为 <code>dsh-v0.1.3-alpha.1</code>（而非 0.1.2 线的 rc.1），一次追平 984 个提交——0.1.2 线的 alpha.2…rc.1 全部与 0.1.3 首个 alpha。上游在此窗口完成了<strong>会话日志格式 v2</strong>（带迁移机制）、<strong>Web 客户端大改版</strong>（连接恢复指示器、turn rail、同会话消息编辑）、<strong>网络代理治理</strong>、<strong>Python 代码运行时</strong>等主线工作。fork delta 从 102 项增至 119 项，41 个 M/D 全部认领，受保护路径零 diff。</p>
+  <div class="stats">
+    <div class="stat"><b>984</b><span>上游提交（全量追平）</span></div>
+    <div class="stat"><b>4,641</b><span>上游变更文件（+124.6k / −78.1k）</span></div>
+    <div class="stat"><b>6</b><span>合并冲突（全部并集决议）</span></div>
+    <div class="stat ok"><b>13 项</b><span>门禁与冒烟全绿</span></div>
+  </div>
+  <div class="callout ok"><strong>✅ 结论：</strong>同步零积压达成。线上服务已运行 0.1.3-alpha.1 + dsh-better-sidebar 0.18.0 + 移植后的 dsh-token-cost；部署前后门禁（typecheck / build / 兜底测试 / 全量 keyless snapshot / 认领门禁 / staging / 线上 7 层冒烟）全绿。</div>
+</div>
+
+<nav class="toc">
+  <h2>目录</h2>
+  <ol>
+    <li><a href="#upstream-log">上游更新日志（按主题）</a></li>
+    <li><a href="#review-scale">同步审查：规模与命中面</a></li>
+    <li><a href="#review-conflicts">冲突决议（6 处 + lockfile 重建）</a></li>
+    <li><a href="#review-debt">窗口内修复的既有债：skill-load golden</a></li>
+    <li><a href="#review-token-cost">vendored dsh-token-cost 移植与构建重建</a></li>
+    <li><a href="#review-plugin">插件窗口：dsh-better-sidebar 0.18.0 判定</a></li>
+    <li><a href="#review-gates">门禁、格式迁移归档与部署</a></li>
+    <li><a href="#leftovers">遗留项与下一步</a></li>
+  </ol>
+</nav>
+
+<section id="upstream-log">
+  <h2>1. 上游更新日志（按主题）</h2>
+  <p>以下按主题归纳本窗口（dsh-v0.1.2-alpha.1..dsh-v0.1.3-alpha.1）的上游更新，重点是模型可见 / 用户可见行为变化与 fork 面的交互。</p>
+
+  <h3>1.1 会话日志格式 v2 与迁移机制 <span class="badge risk">breaking</span></h3>
+  <p>本窗口最大的结构变化：<code>feat(session)!: embed assistant streams in format v2</code> 将助手流式输出（reasoning/text/tool-call 的 chunk 序列）<strong>内嵌</strong>进会话日志的 v2 格式，配合 <code>feat(session)!: add released format migration</code> 首次建立 released 格式的迁移通道（v0/v1 日志按需迁到 v2 读出）。配套还包括 <code>fix(session): distinguish event seqs from log offsets</code>（事件序号与日志偏移分离）、跨进程<strong>写所有权租约</strong>（session-persistence-jsonl，多进程安全追加）、以及 <code>test(snapshot): roll corpus forward to format v2</code>（快照语料整体滚动到 v2，录制文件 <code>session.jsonl</code> → <code>session.v2.jsonl</code>）。</p>
+  <div class="callout warn"><strong>⚠️ 与 fork 的交互：</strong>SESSION_FORMAT_VERSION 0→2 触发 CLAUDE.local.md 第 11 条规则——部署前已归档 <code>~/.dsh/sessions</code>（229 MB tar，见 §7）。pre-release 无格式兼容承诺，迁移机制是上游的方便之门而非承诺。</div>
+
+  <h3>1.2 会话基础设施</h3>
+  <ul>
+    <li><strong>projection 变更流</strong>：unit-declared viewKey change token、identity-gated change feed——会话投影层获得增量变更语义。</li>
+    <li><strong>深度历史分页</strong>：<code>session-controller: loadThrough</code> + <code>whole-log turn outline projection</code>——长会话可按需加载全量历史。</li>
+    <li><strong>存储健壮性</strong>：per-record 单元的版本读兼容 + 备份跳过式抢救（backup-and-skip salvage）。</li>
+    <li>同一会话内<strong>消息编辑</strong>（session / agent / web 三层联动）。</li>
+  </ul>
+
+  <h3>1.3 Web 客户端大改版 <span class="badge info">UI</span></h3>
+  <ul>
+    <li><strong>连接恢复指示器</strong>：Settings 触发控件旁新增连接故障指示器，提供即时重连（<code>connection.state</code> / <code>reconnect</code> 服务面，Host 事实改经 <code>remote.$host</code> 注入）。这是本窗口 fork 冲突决议的核心交互点（§3）。</li>
+    <li><strong>turn rail</strong>：全会话回跳轨道（load-and-jump）、固定行距可滚动、结算响应预览层（card budgets）。</li>
+    <li><strong>视觉语言</strong>：超椭圆（superellipse）圆角 + 发丝描边（hairline elevation）、composer 笔画加深、菜单半径放宽。</li>
+    <li><strong>可点击链接统一</strong>：link alias + 分类字形；技能候选模糊搜索（shared fuzzy name ranker）。</li>
+    <li>Settings 插件清单按 scope 分组并携带每个 agent preset 的组合信息（plugin-inventory 重构）。</li>
+  </ul>
+
+  <h3>1.4 文件上传与附件统一</h3>
+  <p>generic file upload（issue #2984）：attachment 层存储与投影任意文件、submission lifecycle 流式传输、command 流跨收文件、UI 侧统一混合附件呈现。<code>read_image</code> 结果直接渲染为图片（含嵌套调用）。</p>
+
+  <h3>1.5 网络与代理治理</h3>
+  <p><code>feat(net): route every outbound request through the configured proxy</code>——所有出站请求统一走配置的代理；http-proxy 连续 3 个 fix。对本部署（网关 OpenClash 透明代理）无感，但 dsh 进程内显式代理配置从此是完整的。</p>
+
+  <h3>1.6 默认能力面变化 <span class="badge warn">与 fork base 认领交互</span></h3>
+  <p><code>feat(base / headless / sdk): expose web fetch by default</code>——base bundle 默认暴露 web fetch。fork 的 base 认领（默认挂载 claude-code 子代理 + 遥测 DISABLED）在同一文件族上自动合并：遥测 <code>DISABLED</code> 行与 claude-code 挂载均完整保留，上游新增的 web fetch 行合入，双方语义互不覆盖。</p>
+
+  <h3>1.7 Python 代码运行时</h3>
+  <p><code>feat(code-runtime-python): add the CPython subprocess backend</code> 加上该 scope 下多达 93 个 fix——上游在 Python 代码执行上投入很重，属持续演进方向。</p>
+
+  <h3>1.8 依赖与发布治理</h3>
+  <p>published dependency policy、Host dependency export 分类与身份校验（<code>feat: classify / verify Host dependency export identity</code>）。<span class="note">注：本机构建曾因陈旧 <code>lib/</code> 产物触发 rolldown MISSING_EXPORT，clean 重建后通过——与该治理方向同源（产物身份严格化），根因在本地陈旧产物而非上游。</span></p>
+
+  <h3>1.9 其他</h3>
+  <ul>
+    <li><code>feat(presets): omit workflow from PTC mode</code>——PTC 模式组合调整。</li>
+    <li><code>feat(release): route dsh prerelease dist-tags</code>——npm prerelease 分发标签路由。</li>
+    <li>Python SDK 新增 macOS x64 runtime wheels。</li>
+    <li>模型列表发现修复、workspace 修复、turn-rail 预览（#3414）、issue-management PR 打开时初始化 Issue 起始日期等。</li>
+  </ul>
+</section>
+
+<section id="review-scale">
+  <h2>2. 同步审查：规模与命中面</h2>
+  <dl class="kv">
+    <div><dt>合并方式</dt><dd><code>git merge --no-ff dsh-v0.1.3-alpha.1</code> 到 <code>sync/upstream-dsh-v0.1.3-alpha.1</code>，rerere 开启并记录全部决议</dd></div>
+    <div><dt>窗口规模</dt><dd>上游 4,641 个文件变更（545 A / 480 D / 3,501 M + 一批 rename）</dd></div>
+    <div><dt>真冲突候选</dt><dd>以 merge-base 计算双方改动交集 = 30 个文件；实际冲突仅 6 个（其余自动合并）</dd></div>
+    <div><dt>fork delta</dt><dd>102 项 → 119 项；M/D 41 个全部认领；受保护路径零 diff（<code>sync-scope check</code> 通过）</dd></div>
+    <div><dt>二次冲突规则</dt><dd>未触发：无上游文件连续两个窗口冲突（connection/web-app 历史热点本窗口自动合并或一次性决议）</dd></div>
+  </dl>
+</section>
+
+<section id="review-conflicts">
+  <h2>3. 冲突决议（6 处 + lockfile 重建）</h2>
+  <p>决议原则不变：<strong>双方语义并集</strong>——上游新特性与 fork 特性互不覆盖。</p>
+  <div class="tbl-wrap">
+  <table class="dense zebra">
+    <caption>表 1：合并冲突与决议</caption>
+    <thead><tr><th>文件</th><th>上游改动</th><th>fork 改动</th><th>决议</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>ui-settings-general/src/client/locales.ts</code></td>
+        <td>新增 <code>connection.*</code> 六键（连接指示器文案）</td>
+        <td>新增 <code>version.title</code>（版本行文案）</td>
+        <td>并集：两套键共存，zh/en 各自补齐</td>
+      </tr>
+      <tr>
+        <td><code>ui-settings-general/README.md</code> / <code>README.zh.md</code></td>
+        <td>段落改写：加入连接故障指示器描述</td>
+        <td>段落含只读版本行条款</td>
+        <td>并集：上游新句 + fork 版本行条款</td>
+      </tr>
+      <tr>
+        <td><code>ui-settings-general/README.i18n.yaml</code></td>
+        <td colspan="2">双方改动一致（无冲突标记）</td>
+        <td>直接采纳</td>
+      </tr>
+      <tr>
+        <td><code>ui-settings-general/tests/apply.client.spec.ts</code></td>
+        <td>connection provide 改为 <code>state</code>/<code>reconnect</code>，Host 事实移至 <code>remote.$host</code></td>
+        <td>connection provide 携带 <code>isLoopback</code>/<code>webVersion</code></td>
+        <td>单一 provide 合并四字段；保留 <code>$host</code> 注入；版本行测试路径不变</td>
+      </tr>
+      <tr>
+        <td><code>bundle/web-app/tsconfig.json</code></td>
+        <td>references 重排（<code>connection/tsconfig.host.json</code> 移至字母序位）</td>
+        <td>追加 <code>runtime-diagnostics/invariants</code> 引用</td>
+        <td>保留 fork 引用一次，去掉 merge 副本导致的重复 connection 引用</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <h3>3.1 pnpm-lock.yaml 重建</h3>
+  <p>lockfile 是文本合并，直接采纳会混入 fork 旧基线版本。处理：以上游 lockfile 整体为底，<code>pnpm install --lockfile-only</code> 重新吸收 fork 唯一的 workspace 依赖差异（<code>bundle/base</code> 的 <code>@deepseek-ai/dsh-subagent-claude-code</code>），随后全量 <code>pnpm install</code> 同步 node_modules（第三方 notices pre-commit 依赖它）。</p>
+  <h3>3.2 fork delta 完整性核验</h3>
+  <p>合并结果对上游 tag 的剩余差异（41 文件）逐一核对：agent notes、diagrams、SURFACES、bundle/base（遥测 DISABLED + claude-code 挂载）、connection（webVersion 镜像）、ui-settings-general（VersionRow）、web-app（版本注入表）、presets、subagent-claude-code README——全部为预期的 fork delta，无丢失。</p>
+</section>
+
+<section id="review-debt">
+  <h2>4. 窗口内修复的既有债：skill-load golden</h2>
+  <p>全量 keyless snapshot 首跑 87 用例 1 失败：<code>replays skill-load</code>。根因<strong>不是合并回归</strong>，而是 master 上的既有债：</p>
+  <ul>
+    <li>录制语料（上游录制）内嵌的是<strong>上游版</strong> skill 文案（"independent optional Profile Bundles…"）；</li>
+    <li>而 workspace setup 会把 fork 定制过的 <code>editing-cordis-compositions/SKILL.md</code>（描述 fork base 默认挂载 claude-code）拷进回放现场，tool_result 取的是<strong>现场文件</strong>；</li>
+    <li>两侧字面比较即失败——自 fork 定制该 SKILL.md 起此用例在全量跑法下必红，只是此前窗口按最小充分门禁未跑全量 snapshot。</li>
+  </ul>
+  <p>修复：该 fixture 是 <code>recording: authored</code> 场景，record 模式会跳过（authored/format-pinned 均跳），正确通道是 <code>DSH_SNAPSHOT=refresh</code> 定向重放刷新（消耗少量 API）。刷新后 fixture 内嵌 fork 文案，replay 转绿。</p>
+  <div class="callout"><strong>ℹ️ 注意：</strong>authored 场景的刷新走 <code>refresh</code> 而非 <code>record</code>；另外 refresh 模式测试名前缀会变（"refreshs …"），<code>-t</code> 过滤器要用场景名而非完整测试名。</div>
+</section>
+
+<section id="review-token-cost">
+  <h2>5. vendored dsh-token-cost 移植与构建重建</h2>
+  <p>staging 首跑红的根因不在 dsh-better-sidebar，而是 fork 自带插件 <code>deploy/profiles/web/vendor/dsh-token-cost</code> 撞上「认领面在上游消失」：</p>
+  <ul>
+    <li><strong>settings API 重构</strong>（上游 <code>f4e49ccf8f</code> refactor(services)）：独立函数 <code>installSettingsSection()</code> 退役，等价能力并入 <code>SettingsProvider.installSection()</code> 方法；<code>settingsNamespace()</code> 构造器不再导出（改为模式校验的品牌字面量）。</li>
+    <li><strong>客户端运行时包重组</strong>：<code>@deepseek-ai/dsh-client-runtime</code> 包上游已不存在，<code>SettingsScope</code> 迁至 <code>@deepseek-ai/dsh-client-ui-settings/client</code>，<code>ClientContext</code> 即 cordis <code>Context</code>，<code>ctx.slots</code> 合并由 ui-renderer 声明。</li>
+    <li><code>settings.plugin.item</code> 键槽与 <code>ctx.settingsScope.bind()</code> 均健在——客户端扩展点未变。</li>
+  </ul>
+  <h3>5.1 代码移植</h3>
+  <pre data-file="deploy/profiles/web/vendor/dsh-token-cost/src/index.ts"><code><span class="diff-del">- import { installSettingsSection, settingsNamespace } from '@deepseek-ai/dsh-settings'</span>
+<span class="diff-del">- export const TOKEN_COST_SETTINGS_NAMESPACE = settingsNamespace('token-cost')</span>
+<span class="diff-del">- installSettingsSection(ctx, TOKEN_COST_SETTINGS_NAMESPACE, Config, config ?? {}, {...})</span>
+<span class="diff-add">+ import type {} from '@deepseek-ai/dsh-settings'   // 仅取 Context 合并</span>
+<span class="diff-add">+ export const TOKEN_COST_SETTINGS_NAMESPACE = 'token-cost'</span>
+<span class="diff-add">+ ctx.inject(['settings'], (sctx) =&gt; {</span>
+<span class="diff-add">+   sctx.settings.installSection(ctx, TOKEN_COST_SETTINGS_NAMESPACE, Config, config ?? {}, {...})</span>
+<span class="diff-add">+ })</span></code></pre>
+  <p>嵌套 <code>ctx.inject(['settings'], …)</code> 保留旧 helper 的可选服务语义（settings 服务未挂载则整段不跑）。客户端半侧四处类型导入重映射（cordis / ui-settings/client / ui-renderer/client），运行时代码零改动。</p>
+  <h3>5.2 构建配置重建</h3>
+  <p>初提交（044f46e8e8）时 lib/ 是历史产物、构建配置从未入库。本次补齐并入库：</p>
+  <ul>
+    <li><code>tsconfig.build.json</code>——带 project references 的 tsc face（emit <code>lib/types</code>，同时就是 typecheck：<code>tsc -b</code>）。关键教训：无 references 时 paths 会把上游源码拉进程序闭包，产生上游自身不暴露的类型错误；有 references 时解析走被引用项目的 d.ts。</li>
+    <li><code>tsdown.config.ts</code>——自包含双 face：Node 半（ESM，bare specifier 全外部化）+ 浏览器半（闭包工厂产物、react 行经 loader 模块表、CSS Modules 由 lightningcss 内联）。两个坑：<span class="highlight">注释里写 <code>packages/*/*/</code> 会因 <code>*&#47;</code> 序列提前终止块注释</span>；tsdown 的 deps 插件 neverBundle/alwaysBundle 组合在 Node face 下会把相对导入滞留为外部导入——改用 rolldown 原生 <code>external</code> 谓词 + 以 <code>lib/types</code> 编译产物为入口解决。</li>
+    <li>构建期类型解析用 walk-up 的 <code>node_modules</code> 符号链接（指向 <code>apps/web/node_modules</code>，gitignore 于包内嵌套 .gitignore）；<code>schemastery</code>/<code>fzstd</code> 的 npm 拼写经 ambient 桥接到仓库 rescoped 类型。</li>
+    <li>顺带修复两处被严格模式暴露的潜在缺陷：<code>resolveScheme</code> 空 scheme 列表无守卫（现 fails loud）、<code>sessionIdFromPath</code> 无守卫索引访问。</li>
+  </ul>
+</section>
+
+<section id="review-plugin">
+  <h2>6. 插件窗口：dsh-better-sidebar 0.18.0 判定</h2>
+  <dl class="kv">
+    <div><dt>peer 机器判定</dt><dd>0.18.0 要求 <code>^0.1.2-rc.1</code> 系（13/13 形式不满足部署基线 0.1.3-alpha.1）——npm 预发布 semver 的正确行为，不构成运行时判定</dd></div>
+    <div><dt>staging 冒烟</dt><dd><span class="badge ok">绿</span> profile 冷装正常启动（0.1.3-alpha.1）；browser-probe 实测 <code>pluginLoaded: true</code> + <code>sidebarRoster: true</code>；页面/控制台零错误、零失败请求</dd></div>
+    <div><dt>决议</dt><dd>用户确认随窗口升级：pin 0.17.1 → 0.18.0（精确 pin 不变），profile lockfile 回填，随部署上线</dd></div>
+  </dl>
+  <div class="callout ok"><strong>✅ 印证纪律：</strong>「peer 形式不满足 ≠ 运行时不兼容」再次成立——判定权在 staging 冒烟的 browser-probe（服务端 RPC 全绿 ≠ 浏览器侧可用，本次 probe 确认了惰性 chunk 在新模块表下正常加载）。</div>
+</section>
+
+<section id="review-gates">
+  <h2>7. 门禁、格式迁移归档与部署</h2>
+  <div class="tbl-wrap">
+  <table class="dense zebra">
+    <caption>表 2：门禁清单与结果</caption>
+    <thead><tr><th>门禁</th><th>覆盖面</th><th>结果</th></tr></thead>
+    <tbody>
+      <tr><td><code>pnpm run typecheck</code></td><td>全仓 TS 面</td><td><span class="badge ok">绿</span></td></tr>
+      <tr><td><code>pnpm run build</code></td><td>clean 后全量重建（tsc + tsdown，222 个 client 产物）</td><td><span class="badge ok">绿</span></td></tr>
+      <tr><td>vitest 兜底（bundle/web-app、client/connection、bundle/base、ui-settings-general）</td><td>SURFACES 命中面</td><td><span class="badge ok">绿</span> 24 文件 / 208 用例</td></tr>
+      <tr><td>web goldens（settings-chrome、shipped-composition）</td><td>fork UI 认领面</td><td><span class="badge ok">绿</span> 14 用例</td></tr>
+      <tr><td><code>pnpm run test:snapshot</code> 全量</td><td>keyless 回放（格式 v2 语料）</td><td><span class="badge ok">绿</span> 119 通过 / 2 平台跳过（首跑暴露的 skill-load 债已修，复跑确认）</td></tr>
+      <tr><td><code>sync-scope snapshot + check</code></td><td>认领门禁</td><td><span class="badge ok">绿</span> 41 M/D 全认领，受保护路径零 diff</td></tr>
+      <tr><td>vendor token-cost <code>tsc -b</code> + <code>tsdown</code></td><td>移植后插件构建</td><td><span class="badge ok">绿</span></td></tr>
+      <tr><td>plugin-stage staging 冒烟</td><td>sidebar 0.18.0 + token-cost</td><td><span class="badge ok">绿</span> 含 browser-probe</td></tr>
+      <tr><td><code>deploy/install.sh</code> 线上冒烟</td><td>7 层（存活/静态资源/terminal WS+PTY/LAN authority 正向/伪造 Host 负向×3/版本一致）</td><td><span class="badge ok">绿</span> L7：0.1.3-alpha.1 == 0.1.3-alpha.1</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <h3>7.1 SESSION 格式迁移归档</h3>
+  <p>窗口含 <code>SESSION_FORMAT_VERSION</code> 0→2。按 fork 纪律（pre-release 无格式兼容承诺），部署前归档：<code>~/.dsh/sessions-archive-20260907-111412.tar.gz</code>（229 MB，242 MB 原目录）。线上 <code>dsh-web</code> 已在新格式下重启并全绿。</p>
+  <h3>7.2 提交链</h3>
+  <ul class="source-list">
+    <li>4a08f9cd3f Merge upstream dsh-v0.1.3-alpha.1（冲突决议 + lockfile 重建）</li>
+    <li>cf46fb30c2 chore(fork): refresh SURFACES snapshot</li>
+    <li>0cdc1f1d3a test(snapshot): refresh skill-load fixture</li>
+    <li>7ae1a76c9e feat(fork): port vendored dsh-token-cost to the 0.1.3 settings API</li>
+    <li>a3050f63f6 chore(fork): upgrade dsh-better-sidebar pin to 0.18.0</li>
+    <li>daab4183f3 Merge branch 'sync/upstream-dsh-v0.1.3-alpha.1' into master（--no-ff）</li>
+  </ul>
+</section>
+
+<section id="leftovers">
+  <h2>8. 遗留项与下一步</h2>
+  <ul>
+    <li><strong>vendor devDependencies 版本陈旧</strong>（<code>^0.1.0-rc.6</code> 系）：in-repo 构建经 tsconfig paths/reference 解析，不使用这些版本；留待 token-cost 需要独立于仓库构建时再统一刷新。<span class="badge info">低优先</span></li>
+    <li><strong>diagrams/ 意外再生成</strong>：窗口中一次误触发的根构建再生成图产物，已 stash（"accidental diagram regeneration during sync window"），内容无价值可弃。</li>
+    <li><strong>下一窗口关注</strong>：0.1.3 线后续 alpha；settings API（installSection）与 connection（state/reconnect）两个新面已进入 fork 命中清单，二次冲突时按规则评估 fork-only bundle 化。</li>
+    <li><strong>全量 snapshot 纳入门禁考虑</strong>：skill-load 债之所以能潜伏，是因为按最小充分门禁从未跑全量。后续同步窗口若上游动语料/skill 面，可把 <code>test:snapshot</code> 加入候选门禁集（代价：分钟级）。</li>
+  </ul>
+</section>
+
+<p class="note">🤖 Generated with Claude Code</p>
+
+</main>
+</body>
+</html>

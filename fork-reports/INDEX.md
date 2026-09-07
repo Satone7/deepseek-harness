@@ -17,6 +17,7 @@ YYYY-MM-DD-upstream-<from>-to-<to>.html
 
 | 日期 | 同步范围 | 报告 |
 |---|---|---|
+| 2026-09-07 | 0.1.2-alpha.1 → 0.1.3-alpha.1(984 commits 全量追平,主线为 Session 格式 v2+迁移、连接恢复指示器/turn rail 等客户端大改版、出站代理治理、Python 代码运行时;6 处冲突并集决议;token-cost 移植 installSection 并重建构建配置;首次修复全量 snapshot 暴露的 skill-load golden 债;SESSION v0→v2 部署前归档 229MB;插件 0.17.1→0.18.0 staging 绿同窗口升级,部署 7 层冒烟全绿) | [2026-09-07-upstream-0.1.2-alpha.1-to-0.1.3-alpha.1.html](2026-09-07-upstream-0.1.2-alpha.1-to-0.1.3-alpha.1.html) |
 | 2026-08-30 | 0.1.1-rc.2 → 0.1.2-alpha.1(1079 commits,主线为 RPC/连接层大重构、token 浏览器鉴权、CLI 拒绝 0.0.0.0;二次冲突规则触发 → LAN fence 退役、random-uuid/apiproxy 退役,fork M/D 83→41;冒烟/探针/部署链适配 token+聚合 bundle;插件 0.16.1→0.17.1 alpha.1 适配版,线上 12 项冒烟全绿) | [2026-08-30-upstream-0.1.1-rc.2-to-0.1.2-alpha.1.html](2026-08-30-upstream-0.1.1-rc.2-to-0.1.2-alpha.1.html) |
 | 2026-08-24 | 0.1.1-rc.1 → 0.1.1-rc.2(35 commits,主线为图像管线统一化;同窗口含终端/预览根因修复、栅栏收口、插件 0.15.2;首次按 fork-upstream-sync SKILL 执行) | [2026-08-24-upstream-0.1.1-rc.1-to-0.1.1-rc.2.html](2026-08-24-upstream-0.1.1-rc.1-to-0.1.1-rc.2.html) |
 | 2026-08-21 | 0.1.0-rc.7 → 0.1.1-rc.1(99f6f02fec → 528c682e06,448 commits) | [2026-08-21-upstream-rc.7-to-0.1.1-rc.1.html](2026-08-21-upstream-rc.7-to-0.1.1-rc.1.html) |

@@ -53,13 +53,20 @@
       "CLAUDE.local.md"
     ],
     "test": "scripts/fork/smoke.sh L1-L7（L5 LAN authority 正向 / L6 伪造 Host 负向）"
+  },
+  {
+    "feature": "test(snapshot): skill-load fixture 跟随 fork 定制的 SKILL.md 文案",
+    "globs": [
+      "snapshots/session/skill-load/**"
+    ],
+    "test": "DSH_SNAPSHOT=refresh 定向刷新（authored 场景 record 模式会跳过）后 pnpm run test:snapshot -t skill-load 回放绿"
   }
 ]
 ```
 
 ## 当前 delta 快照（生成，勿手改）
 
-统计：119 个文件（M/D 41，A 78）；已认领 M/D：101。
+统计：125 个文件（M/D 42，A 83）；已认领 M/D：107。
 
 | 状态 | 路径 | 认领 |
 |---|---|---|
@@ -90,6 +97,7 @@
 | A | `deploy/profiles/web/package.json` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `deploy/profiles/web/pnpm-lock.yaml` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `deploy/profiles/web/pnpm-workspace.yaml` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
+| A | `deploy/profiles/web/vendor/dsh-token-cost/.gitignore` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `deploy/profiles/web/vendor/dsh-token-cost/LICENSE` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `deploy/profiles/web/vendor/dsh-token-cost/README.en.md` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `deploy/profiles/web/vendor/dsh-token-cost/README.md` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
@@ -118,6 +126,10 @@
 | A | `deploy/profiles/web/vendor/dsh-token-cost/src/protocol.ts` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `deploy/profiles/web/vendor/dsh-token-cost/src/routes.ts` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `deploy/profiles/web/vendor/dsh-token-cost/src/trust-fence.ts` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
+| A | `deploy/profiles/web/vendor/dsh-token-cost/src/vendor-modules.d.ts` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
+| A | `deploy/profiles/web/vendor/dsh-token-cost/tsconfig.build.json` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
+| A | `deploy/profiles/web/vendor/dsh-token-cost/tsconfig.json` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
+| A | `deploy/profiles/web/vendor/dsh-token-cost/tsdown.config.ts` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `deploy/systemd/dsh-web.service` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `diagrams/dsh-architecture.html` | 新增(无需认领) |
 | A | `diagrams/dsh-architecture.json` | 新增(无需认领) |
@@ -182,3 +194,4 @@
 | A | `scripts/fork/plugin-stage.sh` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `scripts/fork/smoke.sh` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `scripts/fork/sync-scope.mjs` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
+| M | `snapshots/session/skill-load/session.v2.jsonl` | 认领:test(snapshot): skill-load fixture 跟随 fork 定制的 SKILL.md 文案 |
