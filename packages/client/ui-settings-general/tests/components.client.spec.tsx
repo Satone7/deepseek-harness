@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-test-runtime'
+import { bindSnapshotSelector, RemoteError } from '@deepseek-ai/dsh-client-test-runtime'
 import type { GeneralSectionComponentProps } from '../src/client/GeneralSection.tsx'
 import { GeneralSection } from '../src/client/GeneralSection.tsx'
 import { CloseLabel, HeaderContent, TriggerContent } from '../src/client/chrome.tsx'
@@ -11,10 +11,10 @@ import { SettingsDescribeMirror } from '@deepseek-ai/dsh-client-ui-settings/src/
 import { SettingsDocumentStore } from '../src/client/settings-document-store.ts'
 import { VersionRow } from '../src/client/VersionRow.tsx'
 
-/** Store over a real mirror derived from the same fake wire. */
-function derivedDocumentStore(api: object) {
-  const wire = api as never
-  return new SettingsDocumentStore(wire, new SettingsDescribeMirror(wire))
+/** Store over a real mirror derived from the same scripted context. */
+function derivedDocumentStore(remote: object) {
+  const ctx = { remote } as never
+  return new SettingsDocumentStore(ctx, new SettingsDescribeMirror(ctx))
 }
 import { en } from '../src/client/locales.ts'
 
@@ -107,9 +107,9 @@ describe('SettingsDocumentAction', () => {
     const describe = vi.fn()
       .mockResolvedValueOnce({ ok: true as const, value: { writable: true, hasDocument: false, namespaces: [] } })
       .mockResolvedValueOnce({ ok: true as const, value: { writable: true, hasDocument: true, namespaces: [] } })
-    const wire = { settings: { describe, openSettingsDocument: vi.fn() } } as never
-    const mirror = new SettingsDescribeMirror(wire)
-    const controller = new SettingsDocumentStore(wire, mirror)
+    const ctx = { remote: { settings: { describe, openSettingsDocument: vi.fn() } } } as never
+    const mirror = new SettingsDescribeMirror(ctx)
+    const controller = new SettingsDocumentStore(ctx, mirror)
     const first = render(<SettingsDocumentAction
       {...kit}
       t={t}
@@ -143,7 +143,7 @@ describe('SettingsDocumentAction', () => {
         })),
         openSettingsDocument: vi.fn(() => Promise.resolve({
           ok: false as const,
-          error: { code: 'internal' as const, message: 'xdg-open missing', details: {} },
+          error: new RemoteError('gateway/internal', 'xdg-open missing', {}),
         })),
       },
     })
