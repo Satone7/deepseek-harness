@@ -1,0 +1,431 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "DeepSeek Harness (dsh) 总体架构",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Satone7/deepseek-harness",
+      "revision": "965bd27496d24a3d90e17a835da07204a382eed9"
+    },
+    "views": [
+      {
+        "id": "launch-and-core",
+        "label": "启动到模型调用",
+        "focus": [
+          "web-ui",
+          "auto",
+          "boot",
+          "spine",
+          "llm",
+          "model-api"
+        ],
+        "note": "从 dsh CLI 与 profile 启动，沿核心脊到一次模型请求。"
+      },
+      {
+        "id": "capability-seams",
+        "label": "能力缝隙全景",
+        "focus": [
+          "info",
+          "exec",
+          "agentic",
+          "policy",
+          "data"
+        ],
+        "note": "可整体替换的信息、执行、委派缝隙与本地状态。"
+      }
+    ]
+  },
+  "layout": {
+    "mode": "grid",
+    "cols": 3,
+    "cellW": 250,
+    "cellH": 54,
+    "gapX": 64,
+    "gapY": 38
+  },
+  "components": [
+    {
+      "id": "web-ui",
+      "type": "frontend",
+      "label": "Web GUI 客户端 (浏览器)",
+      "sublabel": "client 插件 · 会话事件渲染",
+      "size": [
+        250,
+        54
+      ],
+      "row": 0,
+      "col": 0
+    },
+    {
+      "id": "auto",
+      "type": "frontend",
+      "label": "SDK / ACP 客户端",
+      "sublabel": "TypeScript · Python · ACP",
+      "size": [
+        250,
+        54
+      ],
+      "row": 0,
+      "col": 1
+    },
+    {
+      "id": "model-api",
+      "type": "cloud",
+      "label": "DeepSeek API",
+      "sublabel": "模型推理 · HTTPS",
+      "size": [
+        250,
+        54
+      ],
+      "row": 0,
+      "col": 2
+    },
+    {
+      "id": "boot",
+      "type": "backend",
+      "label": "dsh CLI 与 profile 启动",
+      "sublabel": "--profile web / headless / sdk / sdk-minimal / acp",
+      "tag": "bundle 层叠 · patch 覆写",
+      "size": [
+        250,
+        54
+      ],
+      "row": 1,
+      "col": 0,
+      "sources": [
+        {
+          "path": "docs/architecture.md",
+          "line": 17,
+          "end_line": 29
+        }
+      ]
+    },
+    {
+      "id": "spine",
+      "type": "backend",
+      "label": "核心产品脊 (core)",
+      "sublabel": "ctx.agents · agentLoop · sessions · tools · systemPrompt",
+      "tag": "turn / step 事件域",
+      "size": [
+        250,
+        54
+      ],
+      "row": 1,
+      "col": 1,
+      "sources": [
+        {
+          "path": "docs/architecture.md",
+          "line": 53,
+          "end_line": 62
+        }
+      ]
+    },
+    {
+      "id": "llm",
+      "type": "backend",
+      "label": "LLM 缝隙 ctx.llm",
+      "sublabel": "provider 适配器 (llm-deepseek)",
+      "size": [
+        250,
+        54
+      ],
+      "row": 1,
+      "col": 2,
+      "sources": [
+        {
+          "path": "docs/capability-seams.md",
+          "line": 467
+        }
+      ]
+    },
+    {
+      "id": "info",
+      "type": "backend",
+      "label": "文件 · 检索 · 技能缝隙",
+      "sublabel": "ctx.fs · web · lsp · skill",
+      "tag": "落点: 本机文件 · 外网",
+      "size": [
+        250,
+        54
+      ],
+      "row": 2,
+      "col": 0,
+      "sources": [
+        {
+          "path": "docs/capability-seams.md",
+          "line": 519
+        },
+        {
+          "path": "docs/capability-seams.md",
+          "line": 525
+        },
+        {
+          "path": "docs/capability-seams.md",
+          "line": 532
+        }
+      ]
+    },
+    {
+      "id": "exec",
+      "type": "backend",
+      "label": "执行与沙箱缝隙",
+      "sublabel": "ctx.subprocess · shell · terminal · sandbox · codeRuntime",
+      "tag": "落点: 本机进程 · 远程沙箱",
+      "size": [
+        250,
+        54
+      ],
+      "row": 2,
+      "col": 2,
+      "sources": [
+        {
+          "path": "docs/capability-seams.md",
+          "line": 510
+        },
+        {
+          "path": "docs/capability-seams.md",
+          "line": 514
+        },
+        {
+          "path": "docs/capability-seams.md",
+          "line": 518
+        }
+      ]
+    },
+    {
+      "id": "data",
+      "type": "database",
+      "label": "本地持久化与状态",
+      "sublabel": "sessionPersistence (SQLite/JSONL) · settings · credentials",
+      "size": [
+        250,
+        54
+      ],
+      "row": 3,
+      "col": 0,
+      "sources": [
+        {
+          "path": "docs/capability-seams.md",
+          "line": 482
+        },
+        {
+          "path": "docs/capability-seams.md",
+          "line": 483
+        },
+        {
+          "path": "docs/capability-seams.md",
+          "line": 485
+        }
+      ]
+    },
+    {
+      "id": "policy",
+      "type": "security",
+      "label": "审批 · 命令 · 权限",
+      "sublabel": "ctx.approval · commands · permissionPresets",
+      "size": [
+        250,
+        54
+      ],
+      "row": 3,
+      "col": 1,
+      "sources": [
+        {
+          "path": "docs/capability-seams.md",
+          "line": 501
+        },
+        {
+          "path": "docs/capability-seams.md",
+          "line": 516
+        },
+        {
+          "path": "docs/capability-seams.md",
+          "line": 517
+        }
+      ]
+    },
+    {
+      "id": "agentic",
+      "type": "backend",
+      "label": "委派与后台缝隙",
+      "sublabel": "ctx.subagents · jobs · workflowEngine · webhook",
+      "size": [
+        250,
+        54
+      ],
+      "row": 3,
+      "col": 2,
+      "sources": [
+        {
+          "path": "docs/capability-seams.md",
+          "line": 521
+        },
+        {
+          "path": "docs/capability-seams.md",
+          "line": 530
+        },
+        {
+          "path": "docs/capability-seams.md",
+          "line": 531
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "dsh 进程 (Node · Cordis 插件树)",
+      "wraps": [
+        "boot",
+        "spine",
+        "llm",
+        "info",
+        "exec",
+        "data",
+        "policy",
+        "agentic"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "客户端宿主 (浏览器 / 用户程序)",
+      "wraps": [
+        "web-ui",
+        "auto"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "web-ui-to-boot",
+      "from": "web-ui",
+      "to": "boot",
+      "label": "HTTP · Remote RPC",
+      "labelAt": [
+        165,
+        147
+      ]
+    },
+    {
+      "id": "auto-to-boot",
+      "from": "auto",
+      "to": "boot",
+      "label": "JSON-RPC / ACP",
+      "labelAt": [
+        322,
+        147
+      ]
+    },
+    {
+      "id": "boot-to-spine",
+      "from": "boot",
+      "to": "spine",
+      "label": "装配树",
+      "labelAt": [
+        296,
+        241
+      ]
+    },
+    {
+      "id": "spine-to-llm",
+      "from": "spine",
+      "to": "llm",
+      "label": "agent/request · llm/stream",
+      "labelAt": [
+        636,
+        147
+      ]
+    },
+    {
+      "id": "llm-to-api",
+      "from": "llm",
+      "to": "model-api",
+      "label": "推理请求"
+    },
+    {
+      "id": "spine-to-info",
+      "from": "spine",
+      "to": "info",
+      "label": "工具注册 · 调用",
+      "labelAt": [
+        165,
+        245
+      ]
+    },
+    {
+      "id": "spine-to-exec",
+      "from": "spine",
+      "to": "exec",
+      "label": "工具调用 · 管道",
+      "variant": "emphasis",
+      "labelAt": [
+        793,
+        245
+      ]
+    },
+    {
+      "id": "spine-to-agentic",
+      "from": "spine",
+      "to": "agentic",
+      "label": "委派工具 · 任务工具",
+      "labelAt": [
+        793,
+        337
+      ]
+    },
+    {
+      "id": "spine-to-policy",
+      "from": "spine",
+      "to": "policy",
+      "label": "approval/request · 命令",
+      "variant": "security",
+      "labelAt": [
+        479,
+        337
+      ]
+    },
+    {
+      "id": "spine-to-data",
+      "from": "spine",
+      "to": "data",
+      "label": "SessionEvent 持久化",
+      "variant": "emphasis",
+      "labelAt": [
+        165,
+        337
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "启动与形态",
+      "items": [
+        "dsh CLI 与具名 profile 是唯一 Node 应用入口 (web / headless / sdk / sdk-minimal / acp)",
+        "bundle 按 profile 层叠组合，patch 覆写任意配置行；sdk-minimal 不用 dsh-base",
+        "Python SDK 运行时打包 dsh CLI，以 --profile sdk 启动"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "核心语义",
+      "items": [
+        "每个产品件都是 Cordis 插件，无特权核心；注册即 effect，随插件卸载回滚",
+        "ctx.sessions 提供 append-only SessionEvent 日志；model-visible 必可重构自日志",
+        "ctx.agentLoop 是唯一具体驱动；扩展挂在 agent/*、tools/*、llm/stream 瀑布上"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "能力缝隙",
+      "items": [
+        "缝隙 = Service Definition + Service Provider + Consumer 三角色，缺一不可",
+        "provider 整体可换：fs/subprocess 指向远程沙箱时 bash、PTY、LSP 随之迁移",
+        "外部子代理后端 (Codex/Claude Code/ACP) 经 ctx.subprocess 派生",
+        "审批瀑布无应答即 fail closed；ACP 桥为自己的 agent 应答"
+      ]
+    }
+  ]
+}

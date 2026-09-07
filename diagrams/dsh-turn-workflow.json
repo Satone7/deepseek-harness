@@ -1,0 +1,242 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "dsh 模型回合驱动流程 (turn / step)",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1040,
+      652
+    ]
+  },
+  "lanes": [
+    {
+      "id": "session",
+      "label": "会话层 (ctx.sessions)"
+    },
+    {
+      "id": "loop",
+      "label": "agent-loop 驱动"
+    },
+    {
+      "id": "llm",
+      "label": "LLM 缝隙 (ctx.llm)"
+    },
+    {
+      "id": "tools",
+      "label": "工具管道 (ctx.tools)"
+    }
+  ],
+  "phases": [
+    {
+      "id": "open",
+      "label": "开启回合",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "reason",
+      "label": "装配与推理",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "execute",
+      "label": "执行与收尾",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "inbox",
+    "claim",
+    "assemble",
+    "request",
+    "message",
+    "done"
+  ],
+  "nodes": [
+    {
+      "id": "inbox",
+      "lane": "session",
+      "col": 0,
+      "type": "messagebus",
+      "label": "输入就绪 (inbox)",
+      "sublabel": "队列消息 · 注入上下文待命",
+      "width": 168
+    },
+    {
+      "id": "done",
+      "lane": "session",
+      "col": 5,
+      "type": "backend",
+      "label": "回合关闭 (turn/end)",
+      "sublabel": "无欠账 · 答复已入日志",
+      "width": 168
+    },
+    {
+      "id": "claim",
+      "lane": "loop",
+      "col": 1,
+      "type": "backend",
+      "label": "claim 下一输入",
+      "sublabel": "turn/start · 每 step 一次",
+      "width": 168
+    },
+    {
+      "id": "assemble",
+      "lane": "loop",
+      "col": 2,
+      "type": "backend",
+      "label": "装配与裁决 (agent/pre-step)",
+      "sublabel": "prompt 段 + 工具 schema · 可改写",
+      "width": 192
+    },
+    {
+      "id": "message",
+      "lane": "loop",
+      "col": 4,
+      "type": "backend",
+      "label": "assistant/message · 决策",
+      "sublabel": "含 tool/call*? · 或直接完成",
+      "width": 168
+    },
+    {
+      "id": "request",
+      "lane": "llm",
+      "col": 3,
+      "type": "backend",
+      "label": "agent/request → llm/stream",
+      "sublabel": "assistant/chunk* 流式 · 瀑布放行",
+      "width": 192
+    },
+    {
+      "id": "api",
+      "lane": "llm",
+      "col": 5,
+      "type": "cloud",
+      "label": "模型 API",
+      "sublabel": "DeepSeek 推理 · HTTP",
+      "width": 168
+    },
+    {
+      "id": "tool",
+      "lane": "tools",
+      "col": 4,
+      "type": "backend",
+      "label": "工具执行管道",
+      "sublabel": "tools/pre · execute · post",
+      "width": 168
+    }
+  ],
+  "edges": [
+    {
+      "id": "wake-claim",
+      "from": "inbox",
+      "to": "claim",
+      "label": "唤醒 / 取消息",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "claim-assemble",
+      "from": "claim",
+      "to": "assemble",
+      "label": "装配与裁决",
+      "role": "main"
+    },
+    {
+      "id": "reject-close",
+      "from": "assemble",
+      "to": "done",
+      "label": "拒绝 / 空 enter → 空回合关闭",
+      "variant": "dashed",
+      "role": "error"
+    },
+    {
+      "id": "assemble-request",
+      "from": "assemble",
+      "to": "request",
+      "label": "enter → agent/request",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "request-api",
+      "from": "request",
+      "to": "api",
+      "label": "推理流 (HTTP)",
+      "role": "main"
+    },
+    {
+      "id": "stream-message",
+      "from": "request",
+      "to": "message",
+      "label": "流完成 → assistant/message",
+      "role": "main"
+    },
+    {
+      "id": "direct-done",
+      "from": "message",
+      "to": "done",
+      "label": "无 tool/call* · 无欠账",
+      "role": "main"
+    },
+    {
+      "id": "call-tool",
+      "from": "message",
+      "to": "tool",
+      "label": "tool/call*",
+      "variant": "emphasis",
+      "role": "branch"
+    },
+    {
+      "id": "tool-done",
+      "from": "tool",
+      "to": "done",
+      "label": "无欠账 → turn/end",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "loop-next-step",
+      "from": "tool",
+      "to": "claim",
+      "label": "工具后仍需请求 / 新输入 → 下个 step",
+      "variant": "dashed",
+      "role": "branch"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "violet",
+      "title": "step 与 turn",
+      "items": [
+        "step = 一次模型请求加上它调用的工具",
+        "turn = 零到多个 step：首个输入被认领前开启，无欠账即关闭",
+        "被拒绝或改写为空的首个 claim 也会关闭一个没有 step 的回合"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "事件即日志",
+      "items": [
+        "turn/*、step/*、user/message、assistant/*、tool/* 都是 durable SessionEvent",
+        "模型看到的一切都必须能从日志重构 (model-visible ⟺ logged)",
+        "agent/*、tools/*、llm/stream 是 live 瀑布：监听者必须 next() 放行"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "策略挂接点",
+      "items": [
+        "工具管道按 pre-policy → execute → post-policy → 结果观察执行",
+        "审批瀑布与 tools/execute 超时守卫挂在管道上；无应答即 fail closed",
+        "压缩、spill 等消费者挂在 post-step / tools/post-execute 事件上"
+      ]
+    }
+  ]
+}

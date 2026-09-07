@@ -59,7 +59,7 @@
 
 ## 当前 delta 快照（生成，勿手改）
 
-统计：102 个文件（M/D 41，A 61）；已认领 M/D：100。
+统计：119 个文件（M/D 41，A 78）；已认领 M/D：101。
 
 | 状态 | 路径 | 认领 |
 |---|---|---|
@@ -119,10 +119,27 @@
 | A | `deploy/profiles/web/vendor/dsh-token-cost/src/routes.ts` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `deploy/profiles/web/vendor/dsh-token-cost/src/trust-fence.ts` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `deploy/systemd/dsh-web.service` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
+| A | `diagrams/dsh-architecture.html` | 新增(无需认领) |
+| A | `diagrams/dsh-architecture.json` | 新增(无需认领) |
+| A | `diagrams/dsh-architecture.visual-check.1440x900.dark.png` | 新增(无需认领) |
+| A | `diagrams/dsh-architecture.visual-check.1440x900.light.png` | 新增(无需认领) |
+| A | `diagrams/dsh-architecture.visual-check.2048x1320.dark.png` | 新增(无需认领) |
+| A | `diagrams/dsh-architecture.visual-check.2048x1320.light.png` | 新增(无需认领) |
+| A | `diagrams/dsh-architecture.visual-check.html` | 新增(无需认领) |
+| A | `diagrams/dsh-architecture.visual-check.json` | 新增(无需认领) |
+| A | `diagrams/dsh-turn-workflow.html` | 新增(无需认领) |
+| A | `diagrams/dsh-turn-workflow.json` | 新增(无需认领) |
+| A | `diagrams/dsh-turn-workflow.visual-check.1440x900.dark.png` | 新增(无需认领) |
+| A | `diagrams/dsh-turn-workflow.visual-check.1440x900.light.png` | 新增(无需认领) |
+| A | `diagrams/dsh-turn-workflow.visual-check.2048x1320.dark.png` | 新增(无需认领) |
+| A | `diagrams/dsh-turn-workflow.visual-check.2048x1320.light.png` | 新增(无需认领) |
+| A | `diagrams/dsh-turn-workflow.visual-check.html` | 新增(无需认领) |
+| A | `diagrams/dsh-turn-workflow.visual-check.json` | 新增(无需认领) |
 | A | `fork-reports/2026-08-21-upstream-rc.7-to-0.1.1-rc.1.html` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `fork-reports/2026-08-22-fork-maintenance-mechanism.md` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `fork-reports/2026-08-24-upstream-0.1.1-rc.1-to-0.1.1-rc.2.html` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `fork-reports/2026-08-25-drift-check.html` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
+| A | `fork-reports/2026-08-30-upstream-0.1.1-rc.2-to-0.1.2-alpha.1.html` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `fork-reports/INDEX.md` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | A | `fork-reports/SURFACES.md` | 认领:deploy: 0.0.0.0 绑定走 profile patch（上游 CLI 拒绝 --host 0.0.0.0 参数） |
 | M | `packages/bundle/base/README.i18n.yaml` | 认领:feat(base): 默认挂载 claude-code 子代理 + 遥测默认 DISABLED |

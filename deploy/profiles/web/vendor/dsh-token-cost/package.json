@@ -84,9 +84,9 @@
   ],
   "license": "BSD-3-Clause",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && tsdown",
+    "build": "tsc -p tsconfig.build.json && tsdown --config-loader tsx",
     "watch": "tsdown --watch",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -b tsconfig.build.json"
   }
 }

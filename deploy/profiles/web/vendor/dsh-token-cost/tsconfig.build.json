@@ -1,0 +1,43 @@
+{
+  "extends": "../../../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../../../../../vendor/cordis"
+    },
+    {
+      "path": "../../../../../vendor/schemastery"
+    },
+    {
+      "path": "../../../../../packages/settings/settings"
+    },
+    {
+      "path": "../../../../../packages/client/connection/tsconfig.host.json"
+    },
+    {
+      "path": "../../../../../packages/client/locale"
+    },
+    {
+      "path": "../../../../../packages/client/ui-settings"
+    },
+    {
+      "path": "../../../../../packages/client/ui-slots"
+    },
+    {
+      "path": "../../../../../packages/client/ui-renderer"
+    },
+    {
+      "path": "../../../../../packages/client/ui-conversation"
+    },
+    {
+      "path": "../../../../../packages/host/webserver"
+    }
+  ]
+}

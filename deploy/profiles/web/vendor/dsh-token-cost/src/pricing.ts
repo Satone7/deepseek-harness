@@ -233,6 +233,7 @@ export function resolveScheme(
     if (forced !== undefined) return forced
   }
   let chosen = schemes[0]
+  if (chosen === undefined) throw new Error('pricing: empty scheme list cannot resolve a price scheme')
   for (const scheme of schemes) {
     if (scheme.effectiveFrom <= time) chosen = scheme
     else break
