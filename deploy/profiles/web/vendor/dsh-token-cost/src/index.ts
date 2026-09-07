@@ -8,7 +8,8 @@
  */
 
 import type { Context } from '@deepseek-ai/cordis'
-import { installSettingsSection, settingsNamespace } from '@deepseek-ai/dsh-settings'
+// Type-only: pulls the ctx.settings Context merge (SettingsProvider.installSection).
+import type {} from '@deepseek-ai/dsh-settings'
 import type {} from '@deepseek-ai/dsh-host-webserver'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
@@ -46,9 +47,11 @@ export const inject = ['webServer', 'webRuntime']
 /**
  * Settings namespace of the token-cost capability — the section the web
  * settings surface edits. Spelled here rather than imported: the browser
- * half spells the same value and must not depend on a Host package.
+ * half spells the same value and must not depend on a Host package. The
+ * settings service validates the identifier against its namespace pattern
+ * at registration, so no client-side brand constructor is needed.
  */
-export const TOKEN_COST_SETTINGS_NAMESPACE = settingsNamespace('token-cost')
+export const TOKEN_COST_SETTINGS_NAMESPACE = 'token-cost'
 
 /** Plugin config, validated by the same-named schemastery schema. */
 export interface Config {
@@ -148,9 +151,14 @@ export function apply(ctx: Context, config: Config = {}): void {
     )
   }
 
-  installSettingsSection(ctx, TOKEN_COST_SETTINGS_NAMESPACE, Config, config ?? {}, {
-    setSource: (source) => { current = source },
-    onChange: rebuild,
+  // The 0.1.3 settings refactor turned the standalone installSettingsSection
+  // helper into SettingsProvider.installSection; the nested inject keeps the
+  // optional-service semantics (no settings service mounted → no wiring).
+  ctx.inject(['settings'], (sctx) => {
+    sctx.settings.installSection(ctx, TOKEN_COST_SETTINGS_NAMESPACE, Config, config ?? {}, {
+      setSource: (source) => { current = source },
+      onChange: rebuild,
+    })
   })
   rebuild()
   void priceStore.whenReady().then(() => { rebuild() })

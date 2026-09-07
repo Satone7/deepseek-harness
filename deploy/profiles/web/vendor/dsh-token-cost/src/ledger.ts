@@ -71,7 +71,8 @@ async function readSessionText(file: string): Promise<string> {
 export function sessionIdFromPath(file: string): string {
   const parts = file.split('/')
   for (let i = parts.length - 1; i >= 0; i -= 1) {
-    if (parts[i].startsWith('session-') && !parts[i].endsWith('.zstd')) return parts[i]
+    const part = parts[i]
+    if (part !== undefined && part.startsWith('session-') && !part.endsWith('.zstd')) return part
   }
   return 'session-unknown'
 }

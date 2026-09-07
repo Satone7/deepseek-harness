@@ -4,7 +4,7 @@
  */
 
 import { useSyncExternalStore } from 'react'
-import type { SettingsScope } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SettingsScope } from '@deepseek-ai/dsh-client-ui-settings/client'
 
 /** The namespace string both halves spell (settingsNamespace('token-cost')). */
 export const TOKEN_COST_NS = 'token-cost'
